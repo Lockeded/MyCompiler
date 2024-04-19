@@ -349,7 +349,7 @@ void Args(node root,int argc){
         count++;
     }
     if(count != argc){
-        printf("Error type 9 at Line %d: Function \"%s\" is not applicable for arguments \"%s\"\n", root->child[2]->line,);
+        printf("Error type 9 at Line %d: The number of arguments is different from the function definition.\n", root->child[0]->line);
     }
     Exp(p->child[0]);
 }
