@@ -19,14 +19,19 @@ void ExtDef(node root){
     //ExtDef -> Specifier ExtDecList SEMI
     //ExtDef -> Specifier SEMI
     //ExtDef -> Specifier FunDec CompSt
+    //ExtDef -> Specifier FunDec SEMI
 
     Type type = Specifier(root->child[0]);
     if(!strcmp(root->child[1]->name, "ExtDecList")){
         ExtDecList(root->child[1], type);
     }
-    else if(!strcmp(root->child[1]->name, "FunDec")){
+    else if(!strcmp(root->child[1]->name, "FunDec") && !strcmp(root->child[2]->name, "CompSt")){
         FunDec(root->child[1], type);
         CompSt(root->child[2], type);
+    }
+    else if(!strcmp(root->child[1]->name, "FunDec") && !strcmp(root->child[2]->name, "SEMI")){
+        FieldList field = FunDec(root->child[1], type);
+        field->isFunctionImplemented = 0;
     }
 }
 Type Specifier(node root){
@@ -80,20 +85,22 @@ FieldList VarDec(node root, Type type){
     }
     
 }
-void FunDec(node root, Type type){
+FieldList FunDec(node root, Type type){
     //FunDec -> ID LP VarList RP
     //FunDec -> ID LP RP
     type->kind = FUNCTION;
-    if(searchField(root->child[0]->literal)){
+    FieldList field = searchField(root->child[0]->literal);
+    if(field && field->isFunctionImplemented == -1){
         printf("Error type 4 at Line %d: Redefined function \"%s\".\n", root->child[0]->line, (char*)root->child[0]->literal);
-        return;
+        return NULL;
     }
-    FieldList field = createField(root->child[0]->literal, type);
-    field->argc = 0;
+    FieldList new_field = createField(root->child[0]->literal, type);
+    new_field->argc = 0;
     if(root->child_num == 4){
-        field->tail = VarList(root->child[2],&field->argc);
+        new_field->tail = VarList(root->child[2],&field->argc);
     }
-    insertField(field);
+    insertField(new_field);
+    return new_field;
 }
 FieldList VarList(node root,int* argc){
     //VarList -> ParamDec
@@ -113,17 +120,53 @@ FieldList ParamDec(node root){
 Type StructSpecifier(node root){
     //StructSpecifier -> STRUCT OptTag LC DefList RC
     //StructSpecifier -> STRUCT Tag
+
+    Type type = (Type)malloc(sizeof(struct Type_));
+    type->kind = STRUCTURE;
+    type->u.structure = HeadField;
+    if(!strcmp(root->child[1]->name, "OptTag")){
+        OptTag(root->child[1],type);
+        DefList(root->child[3]);
+    }
+    else{
+        Tag(root->child[1],type);   
+    }
+    return type;
+}
+void OptTag(node root, Type type){
+    if(searchField(root->child[0]->literal)){
+        printf("Error type 16 at Line %d:  Duplicated name \"%s\".\n", root->child[0]->line, (char*)root->child[0]->literal);
+    }
+    else{
+        FieldList field = createField(root->child[0]->literal, type);
+        insertField(field);
+    }
+}
+void Tag(node root,Type type){
+    //Tag -> ID
+    if(!searchField(root->child[0]->literal)){
+        printf("Error type 17 at Line %d:  Undefined structure \"%s\".\n", root->child[0]->line, (char*)root->child[0]->literal);
+    }
+    else{
+        FieldList field = createField(root->child[0]->literal, type);
+        insertField(field);
+    }
 }
 void CompSt(node root, Type type){
     //CompSt -> LC DefList StmtList RC
-
+    if (root->child_num < 4)
+    {
+        return;
+    }
     DefList(root->child[1]);
     StmtList(root->child[2], type);
 }
 void DefList(node root){
     //DefList -> Def DefList
     //DefList -> empty
-
+    if(!root){
+        return;
+    }
     if(root->child_num == 2){
         Def(root->child[0]);
         DefList(root->child[1]);
@@ -156,7 +199,11 @@ void Dec(node root, Type type){
 void StmtList(node root, Type type){
     //StmtList -> Stmt StmtList
     //StmtList -> empty
-
+    if (!root)      
+    {
+        return;
+    }
+    
     if(root->child_num == 2){
         Stmt(root->child[0], type);
         StmtList(root->child[1], type);

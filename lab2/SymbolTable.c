@@ -48,7 +48,7 @@ FieldList createField(char* name, Type type){
     strcpy(field->name, name);
     field->type = type;
     field->tail = NULL;
-    field->isFunctionImplemented = 0;
+    field->isFunctionImplemented = -1;
     return field;
 }
 
