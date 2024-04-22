@@ -25,6 +25,7 @@ struct FieldList_
     char* name;
     Type type;
     FieldList tail;
+    FieldList Args;
     int isFunctionImplemented;
     int argc;
 };
