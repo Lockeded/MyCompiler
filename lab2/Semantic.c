@@ -80,7 +80,7 @@ void ExtDecList(node root, Type type){
     //ExtDecList -> VarDec
     //ExtDecList -> VarDec COMMA ExtDecList
 
-    VarDec(root->child[0], type);
+    type->u.structure->Args = VarDec(root->child[0], type);
     if(root->child_num == 3){
         ExtDecList(root->child[2], type);
     }
@@ -198,7 +198,7 @@ Type StructSpecifier(node root){
 
     Type type = (Type)malloc(sizeof(struct Type_));
     type->kind = STRUCTURE;
-    type->u.structure = HeadField;
+    type->u.structure = NULL;
     if(!strcmp(root->child[1]->name, "OptTag")){
         OptTag(root->child[1],type);
         DefListForStruct(root->child[3]);
@@ -214,6 +214,7 @@ void OptTag(node root, Type type){
     }
     else{
         FieldList field = createField(root->child[0]->literal, type);
+        type->u.structure = field;
         insertField(field);
     }
 }
@@ -224,6 +225,7 @@ void Tag(node root,Type type){
     }
     else{
         FieldList field = createField(root->child[0]->literal, type);
+        type->u.structure = field;
         insertField(field);
     }
 }
@@ -407,6 +409,22 @@ Type Exp(node root){
         }
         if(p->child[0]->literal_type != TYPE_ID){
              printf("Error type 6 at Line %d: The left-hand side of an assignment must be a variable.\n", p->child[0]->line);
+        }
+        else if(type_1->kind == STRUCTURE || type_2->kind == STRUCTURE){
+            if(memcmp(&type_1->u,&type_2->u,sizeof(type_1->u)) != 0){
+                printf("Error type 5 at Line %d: Type mismatched for assignment.\n", root->child[1]->line);
+            }
+            // FieldList p = type_1->u.structure->Args;
+            // FieldList q = type_2->u.structure->Args;
+            // while(p && q){
+            //     printf("%d%d",p->type->u.basic,q->type->u.basic);
+            //     if(memcmp(&p->type->u,&q->type->u,sizeof(p->type->u)) != 0){
+            //         printf("Error type 5 at Line %d: Type mismatched for assignment.\n", root->child[1]->line);
+            //         break;
+            //     }
+            //     p = p->tail;
+            //     q = q->tail;
+            // }
         }
         else if(memcmp(&type_1->u, &type_2->u, sizeof(type_1->u)) != 0){
             printf("Error type 5 at Line %d: Type mismatched for assignment.\n", root->child[1]->line);
