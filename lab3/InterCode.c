@@ -283,7 +283,6 @@ Intercode translate_Stmt(node Stmt){
 InterCode translate_Args(node Args, Operand* args){
     //Args -> Exp COMMA Args
     //Args -> Exp
-    
     // if(Args->child_num == 1){
     //     Operand t1 = new_temp();
     //     InterCode code1 = translate_Exp(Args->child[0], t1);
