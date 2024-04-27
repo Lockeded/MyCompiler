@@ -216,7 +216,6 @@ Intercode translate_Stmt(node Stmt){
     //Stmt -> IF LP Exp RP Stmt
     //Stmt -> IF LP Exp RP Stmt ELSE Stmt
     //Stmt -> WHILE LP Exp RP Stmt
-
     if(!strcmp(Stmt->child[0]->name,"Exp") && !strcmp(Stmt->child[1]->name,"SEMI")){
         return translate_Exp(Stmt->child[0], NULL);
     }
@@ -283,7 +282,7 @@ Intercode translate_Stmt(node Stmt){
 InterCode translate_Args(node Args, Operand* args){
     //Args -> Exp COMMA Args
     //Args -> Exp
-    
+
     // if(Args->child_num == 1){
     //     Operand t1 = new_temp();
     //     InterCode code1 = translate_Exp(Args->child[0], t1);
