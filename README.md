@@ -24,7 +24,7 @@
 
 - **我的建议**
 
-  ​	不太喜欢使用`bison`和`flex`这种自动化工具的实验，如果想更深入理解编译器的话，可以试试这本书——[`CraftingInterpreters`](https://www.craftinginterpreters.com/)，这本书使用`Java`语言，全手写了一个`lox`语言的编译器，结合课程来学习是很不错的。
+  ​	个人还是不太喜欢使用`bison`和`flex`这种自动化工具的实验，如果想更深入理解编译器的话，可以试试这本书——[`CraftingInterpreters`](https://www.craftinginterpreters.com/)，这本书使用`Java`语言，全手写了一个`“lox”`语言的编译器，结合课程来学习是很不错的。
 
   ​	如果只是想通过验收，那么至少需要熟悉这些产生式，并且知道每个文件的作用，以及从`cmm`代码文本是如何变成一颗语法分析树的过程（`.l`扫描器 传递`token` -> `.y`分析器 自底向下归约 -> `NodeUtil.c` 构造树）
 
