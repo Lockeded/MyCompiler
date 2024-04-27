@@ -3,7 +3,6 @@
 extern int temp_no;
 extern int label_no;
 void print_Intercode(InterCode code){
-    
     InterCode p = code->code;
     while(p){
         p = p->next;
