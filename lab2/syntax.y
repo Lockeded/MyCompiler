@@ -32,7 +32,7 @@
 %nonassoc ELSE
 
 %%
-Program : ExtDefList { $$= create_node("Program", 0, 1, create_child_list(1,(node []){$1}));semantic($$);}
+Program : ExtDefList { $$= create_node("Program", 0, 1, create_child_list(1,(node []){$1}));print_tree($$,0);semantic($$);}
     ;
 ExtDefList : ExtDef ExtDefList { $$ = create_node("ExtDefList", 0,2,create_child_list(2, (node[]){$1, $2})); }
     | /* 空规则 */ { $$ = create_node("NULL",-1,0,NULL);}

@@ -14,6 +14,7 @@ typedef enum {BASIC,ARRAY,STRUCTURE,FUNCTION} Kind;
 struct Type_
 {
     Kind kind;
+    int isID;
     union{
         ValueType basic;
         struct {Type elem; int size;} array;

@@ -61,6 +61,7 @@ Type Specifier(node root){
         else if(!strcmp(root->child[0]->literal,"float")){
             type->u.basic = TYPE_FLOAT;
         }
+        type->isID = 0;
         return type;
     }
     else{
@@ -101,6 +102,7 @@ FieldList VarDec(node root, Type type){
     }
     else{
         Type array_type = (Type)malloc(sizeof(struct Type_));
+        array_type->isID = 0;
         array_type->kind = ARRAY;
         array_type->u.array.elem = type;
         array_type->u.array.size = *((int*)root->child[2]->literal);
@@ -124,6 +126,7 @@ FieldList VarDecForStruct(node root, Type type){
     }
     else{
         Type array_type = (Type)malloc(sizeof(struct Type_));
+        array_type->isID = 0;
         array_type->kind = ARRAY;
         array_type->u.array.elem = type;
         array_type->u.array.size = *((int*)root->child[2]->literal);
@@ -144,7 +147,7 @@ FieldList FunDec(node root, Type type){
         FieldList new_field = createField(root->child[0]->literal, type);
         new_field->argc = 0;
         if(root->child_num == 4){
-            new_field->Args = VarList(root->child[2],&field->argc);
+            new_field->Args = VarList(root->child[2],new_field);
         }
         insertField(new_field);
         return new_field;
@@ -168,22 +171,44 @@ FieldList FunDecForDec(node root, Type type){
     new_field->isFunctionImplemented = root->child[0]->line;
     new_field->argc = 0;
     if(root->child_num == 4){
-        new_field->Args = VarList(root->child[2],&field->argc);
+        new_field->Args = VarList(root->child[2],new_field);
     }
-    if(field && field->isFunctionImplemented != -1 && (field->argc != new_field->argc || memcmp(&field->type->u, &type->u, sizeof(type->u)) != 0 || memcmp(&field->Args->type->u, &new_field->Args->type->u, sizeof(type->u)) != 0)){
+    if(field && field->isFunctionImplemented != -1 && (!check_args(field,new_field) || memcmp(&field->type->u, &type->u, sizeof(type->u)) != 0)){
         printf("Error type 19 at Line %d: Inconsistent declaration of function \"%s\".\n", root->child[0]->line, (char*)root->child[0]->literal);
         return NULL;
     }
     insertField(new_field);
     return new_field;
 }
-FieldList VarList(node root,int* argc){
+int check_args(FieldList field1, FieldList field2){
+    if(field1->argc != field2->argc){
+        return 0;
+    }
+    int i = 0;
+    int argc = field1->argc;
+    FieldList p1 = field1->Args;
+    FieldList p2 = field2->Args;
+    while(i<argc){
+        i++;
+        if(!p1 || !p2){
+            break;
+        }
+        if(memcmp(&p1->type->u, &p2->type->u, sizeof(p1->type->u)) != 0)
+        {
+            return 0;
+        }
+        p1 = p1->Args;
+        p2 = p2->Args;
+    }
+
+}
+FieldList VarList(node root,FieldList father){
     //VarList -> ParamDec
     //VarList -> ParamDec COMMA VarList
     FieldList field = ParamDec(root->child[0]);
-    *argc++;
+    father->argc++;
     if(root->child_num == 3){
-        field->tail = VarList(root->child[2],argc);
+        field->Args = VarList(root->child[2],father);
     }
     return field;
 }
@@ -199,6 +224,7 @@ Type StructSpecifier(node root){
     Type type = (Type)malloc(sizeof(struct Type_));
     type->kind = STRUCTURE;
     type->u.structure = NULL;
+    type->isID = 0;
     if(!strcmp(root->child[1]->name, "OptTag")){
         OptTag(root->child[1],type);
         DefListForStruct(root->child[3]);
@@ -226,6 +252,7 @@ void Tag(node root,Type type){
     else{
         FieldList field = createField(root->child[0]->literal, type);
         type->u.structure = field;
+        type->kind = STRUCTURE;
         insertField(field);
     }
 }
@@ -267,7 +294,7 @@ void DecForStruct(node root, Type type){
     //Dec -> VarDec ASSIGNOP Exp
     VarDecForStruct(root->child[0], type);
     if(root->child_num == 3){
-        printf("Error type 15 at Line %d: Defined field in initializing \"%s\".\n", root->child[0]->line, (char*)root->child[0]->literal);
+        printf("Error type 15 at Line %d: Defined field in initializing.\n", root->child[0]->line);
     }
 }
 void DefList(node root){
@@ -301,8 +328,11 @@ void Dec(node root, Type type){
     //Dec -> VarDec ASSIGNOP Exp
 
     VarDec(root->child[0],type);
-    if(root->child_num == 3){
-        Exp(root->child[2]);
+    if(root->child_num >= 3){
+        Type type_1 = Exp(root->child[2]);
+        if(memcmp(&type_1->u, &type->u, sizeof(type->u)) != 0){
+            printf("Error type 5 at Line %d: Type mismatched for assignment.\n", root->child[1]->line);
+        }
     }
 }
 void StmtList(node root, Type type){
@@ -334,7 +364,10 @@ void Stmt(node root, Type type){
     }
     else if(!strcmp(root->child[0]->name, "RETURN")){
         Type return_type = Exp(root->child[1]);
-        if(memcmp(&return_type->u, &type->u, sizeof(type->u)) != 0){
+        if(!return_type){
+
+        }
+        else if(memcmp(&return_type->u, &type->u, sizeof(type->u)) != 0){
             printf("Error type 8 at Line %d: Type mismatched for return.\n", root->child[0]->line);
         }
     }
@@ -374,19 +407,23 @@ Type Exp(node root){
             FieldList field = searchField(root->child[0]->literal);
             if(!field){
                 printf("Error type 1 at Line %d: Undefined variable \"%s\".\n", root->child[0]->line, (char*)root->child[0]->literal);
+                return NULL;
             }
             else{
+                field->type->isID = 1;
                 return field->type;
             }
         }
         else if((root->child[0]->literal_type==TYPE_INT)){
             Type type = (Type)malloc(sizeof(struct Type_));
+            type->isID = 0;
             type->kind = BASIC;
             type->u.basic = TYPE_INT;
             return type;
         }
         else if((root->child[0]->literal_type==TYPE_FLOAT)){
             Type type = (Type)malloc(sizeof(struct Type_));
+            type->isID = 0;
             type->kind = BASIC;
             type->u.basic = TYPE_FLOAT;
             return type;
@@ -403,14 +440,10 @@ Type Exp(node root){
         if(!type_1 || !type_2){
             return NULL;
         }
-        node p = root->child[0];
-        while(p->child_num != 1){
-            p = p->child[0];
+        if(type_1 -> isID != 1){
+             printf("Error type 6 at Line %d: The left-hand side of an assignment must be a variable.\n", root->child[0]->line);
         }
-        if(p->child[0]->literal_type != TYPE_ID){
-             printf("Error type 6 at Line %d: The left-hand side of an assignment must be a variable.\n", p->child[0]->line);
-        }
-        else if(type_1->kind == STRUCTURE || type_2->kind == STRUCTURE){
+        else if(type_1->kind == STRUCTURE && type_2->kind == STRUCTURE){
             if(memcmp(&type_1->u,&type_2->u,sizeof(type_1->u)) != 0){
                 printf("Error type 5 at Line %d: Type mismatched for assignment.\n", root->child[1]->line);
             }
@@ -429,17 +462,19 @@ Type Exp(node root){
         else if(memcmp(&type_1->u, &type_2->u, sizeof(type_1->u)) != 0){
             printf("Error type 5 at Line %d: Type mismatched for assignment.\n", root->child[1]->line);
         }
+        return type_1;
 
     }
     else if(!strcmp(root->child[1]->name, "AND") || !strcmp(root->child[1]->name, "OR") || !strcmp(root->child[1]->name, "RELOP") || !strcmp(root->child[1]->name, "PLUS") || !strcmp(root->child[1]->name, "MINUS") || !strcmp(root->child[1]->name, "STAR") || !strcmp(root->child[1]->name, "DIV")){
         Type type_1 = Exp(root->child[0]);
         Type type_2 = Exp(root->child[2]);
-        if(!type_1 || !type_2){
+        if(type_1 == NULL || type_2 == NULL){
             return NULL;
         }
         if(memcmp(&type_1->u, &type_2->u, sizeof(type_1->u)) != 0){
             printf("Error type 7 at Line %d: Type mismatched for operands.\n", root->child[1]->line);
         }
+        return type_1;
     }
     else if(!strcmp(root->child[1]->name, "LB")){
         Type type_1 = Exp(root->child[0]);
@@ -481,18 +516,22 @@ Type Exp(node root){
                     root->child[2]->line);
                     return NULL;
         }
+        type_2->isID = 1;
         return type_2;
     }
     else if(!strcmp(root->child[1]->name, "LP")){
         FieldList field = searchField(root->child[0]->literal);
         if(!field){
                 printf("Error type 2 at Line %d: Undefined function \"%s\".\n", root->child[0]->line, (char*)root->child[0]->literal);
+                return NULL;
             }
         else if(field->type->kind != FUNCTION){
                 printf("Error type 11 at Line %d: \"%s\" is not a function.\n", root->child[0]->line, (char*)root->child[0]->literal);
+                return NULL;
             }
         else if(!strcmp(root->child[2]->name, "Args")){
             Args(root,field->argc);
+            return field->type;
         }
         else{
                 return field->type;
@@ -517,5 +556,4 @@ void Args(node root,int argc){
 }
 void semantic(node root){
     Program(root);
-    //printTable(root);
 }
