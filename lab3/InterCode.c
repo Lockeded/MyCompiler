@@ -415,27 +415,49 @@ InterCode translate_Exp(node Exp,Operand place){
         return link(code0, link(code1, link(code2, link(code3, code4))));
     }
     else if(!strcmp(Exp->child[0]->name, "ID") && !strcmp(Exp->child[2]->name, "Args")){
-        // FieldList field = searchField(Exp->child[0]->literal);
-        // Operand func = malloc(sizeof(struct Operand_));
-        // func->kind = FUNCTION;
-        // func->u.var_no = field->var_no;
-        // InterCode code1 = malloc(sizeof(struct InterCode));
-        // code1.kind = ASSIGN;
-        // code1.u.assign.right = func;
-        // code1.u.assign.left = place;
-        // InterCode code2 = translate_Args(Exp->child[2], field->argc);
-        // return link(code1, code2);
+        FieldList field = searchField(Exp->child[0]->literal);
+        int argc = field->argc;
+        Operand Args[MAX_NAME_LEN];
+        InterCode code1 = translate_Args(Exp->child[2], Args);
+        if(!strcmp(field->name, "write")){
+            InterCode code2 = malloc(sizeof(struct InterCode));
+            InterCode code3 = malloc(sizeof(struct InterCode));
+            code2.kind = WRITE;
+            code2.u.write = Args[0];
+            code3.kind = ASSIGN;
+            Operand zero = create_Immediate(0);
+            code3.u.assign.right = zero;
+            code3.u.assign.left = place;
+            return link(code1, link(code2, code3));
+        }
+        else{
+            for(int i = 0; i < argc; i++){
+                InterCode code2 = malloc(sizeof(struct InterCode));
+                code2.kind = ARG;
+                code2.u.arg = Args[i];
+                code1 = link(code1, code2);
+            }
+            InterCode code3 = malloc(sizeof(struct InterCode));
+            code3.kind = CALL;
+            code3.u.func_name = field->name;
+            code3.u.call.result = place;
+            return link(code1, code3);
+        }
     }
     else if(!strcmp(Exp->child[0]->name, "ID") && !strcmp(Exp->child[1]->name, "LP") && !strcmp(Exp->child[2]->name, "RP")){
-        // FieldList field = searchField(Exp->child[0]->literal);
-        // Operand func = malloc(sizeof(struct Operand_));
-        // func->kind = FUNCTION;
-        // func->u.var_no = field->var_no;
-        // InterCode code1 = malloc(sizeof(struct InterCode));
-        // code1.kind = ASSIGN;
-        // code1.u.assign.right = func;
-        // code1.u.assign.left = place;
-        // return code1;
+        FieldList field = searchField(Exp->child[0]->literal);
+        InterCode code = malloc(sizeof(struct InterCode));
+        if (!strcmp(field->name,"read")){
+            code.kind = READ;
+            code.u.read = place;
+            return code;
+        }
+        else{
+            code.kind = CALL;
+            code.u.call.func_name = field->name;
+            code.u.call.result = place;
+            return code;
+        }
     }
     else if(!strcmp(Exp->child[0]->name, "Exp") && !strcmp(Exp->child[1]->name, "LB")){
         FieldList field = searchField(Exp->child[0]->child[0]->literal);

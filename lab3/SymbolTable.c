@@ -49,6 +49,7 @@ FieldList createField(char* name, Type type){
     field->type = type;
     field->tail = NULL;
     field->isFunctionImplemented = -1;
+    field->argc = 0;
     return field;
 }
 
@@ -74,7 +75,6 @@ FieldList searchField(char* name){
 }
 
 void printTable(){
-    // printf("in printTable\n");
     FieldList p = HeadField->tail;
     while (p)
     {
