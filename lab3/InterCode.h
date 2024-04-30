@@ -2,7 +2,7 @@ typedef struct Operand_* Operand;
 int var_no = 0;
 int label_no = 0;
 typedef enum { VARIABLE, CONSTANT, ADDRESS, LABEL, FUNCTION, RELOP } op_kind
-typedef enum { ASSIGN, ADD, SUB, MUL, DIV, GOTO, RETURN, LABEL, IF, READ, WRITE, CALL, ARG } code_kind;
+typedef enum { ASSIGN, ADD, SUB, MUL, DIV, GOTO, RETURN, LABEL, IF, READ, WRITE, CALL, ARG, DEC } code_kind;
 struct ArgsList {
     Operand arg;
     struct ArgsList *next;
@@ -26,7 +26,9 @@ struct InterCode
         Operand read;
         Operand write;
         Operand arg;
-        struct { Operand result, func_name } call;        
+        struct { Operand result, func_name } call;    
+        Operand dec_name;    
     } u;
 }
 struct InterCodes { InterCode code; struct InterCodes *prev, *next; };
+struct InterCodes *head = NULL, *tail = NULL;

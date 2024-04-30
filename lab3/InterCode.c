@@ -2,37 +2,20 @@
 #include "semantic.h"
 extern int temp_no;
 extern int label_no;
-void print_Intercode(InterCode code){
-    InterCode p = code->code;
-    while(p){
-        p = p->next;
-        switch (p.kind)
-        {
-        case ASSIGN:
-            printf("t%d := t%d\n", p.u.assign.left->u.var_no, p.u.assign.right->u.var_no);
-            break;
-        case ADD:
-            printf("t%d := t%d + t%d\n", p.u.binop.result->u.var_no, p.u.binop.op->u.var_no, p.u.binop.op2->u.var_no);
-            break;
-        case SUB:
-            printf("t%d := t%d - t%d\n", p.u.binop.result->u.var_no, p.u.binop.op->u.var_no, p.u.binop.op2->u.var_no);
-            break;
-        case MUL:
-            printf("t%d := t%d * t%d\n", p.u.binop.result->u.var_no, p.u.binop.op->u.var_no, p.u.binop.op2->u.var_no);
-            break;
-        case GOTO:
-            printf("GOTO label%d\n", p.u.goto_label->u.var_no);
-            break;
-        case RETURN:
-            printf("RETURN t%d\n", p.u.return_value->u.var_no);
-            break;
-        case LABEL:
-            printf("LABEL label%d :\n", p.u.label->u.var_no);
-            break;
-        default:
-            break;
-        }
+void insert_Intercode(InterCode code){
+    if(head == NULL){
+        head = code;
+        tail = code;
     }
+    else{
+        tail->next = code;
+        code->prev = tail;
+        tail = code;
+    }
+}
+void print_Intercode(){
+    InterCodes p = head;
+    
 }
 Operand new_temp(){
     Operand temp = (Operand)malloc(sizeof(struct Operand_));
@@ -67,87 +50,149 @@ Operand create_Immediate(int value){
     imm->u.value = value;
     return imm;
 }
-InterCode translate_Program(node Program){
+void translate_Program(node Program){
     //Program -> ExtDefList
-    InterCode code = malloc(sizeof(struct InterCodes));
-    code->prev = NULL;
-    code->next = NULL;
-    code->code = translate_ExtDefList(Program->child[0]);
-    return code;
+    translate_ExtDefList(Program->child[0]);
 }
-InterCode translate_ExtDefList(node ExtDefList){
+void translate_ExtDefList(node ExtDefList){
     //ExtDefList -> ExtDef ExtDefList
     //ExtDefList -> NULL
     if(ExtDefList->child_num == 0){
         return NULL;
     }
-    InterCode code1 = translate_ExtDef(ExtDefList->child[0]);
-    InterCode code2 = translate_ExtDefList(ExtDefList->child[1]);
-    return link(code1, code2);
+    translate_ExtDef(ExtDefList->child[0]);
+    translate_ExtDefList(ExtDefList->child[1]);
 }
-InterCode translate_ExtDef(node ExtDef){
+void translate_ExtDef(node ExtDef){
     //ExtDef -> Specifier ExtDecList SEMI
     //ExtDef -> Specifier FunDec CompSt
     //ExtDef -> Specifier FunDec SEMI
+
     if(!strcmp(ExtDef->child[1]->name, "ExtDecList")){
-        return NULL;
+        translate_ExtDecList(ExtDef->child[1]);
     }
     else{
-        InterCode code1 = translate_FunDec(ExtDef->child[1]);
-        InterCode code2 = translate_CompSt(ExtDef->child[2]);
-        return link(code1, code2);
+        translate_FunDec(ExtDef->child[1]);
+        translate_CompSt(ExtDef->child[2]);
     }
 }
-InterCode translate_FunDec(node FunDec){
+void translate_ExtDecList(node ExtDecList){
+    //ExtDecList -> VarDec
+    //ExtDecList -> VarDec COMMA ExtDecList
+    if(ExtDecList->child_num == 1){
+        translate_VarDec(ExtDecList->child[0]);
+    }
+    else{
+        translate_VarDec(ExtDecList->child[0]);
+        translate_ExtDecList(ExtDecList->child[2]);
+    }
+}
+void translate_VarDec(node VarDec){
+    //VarDec -> ID
+    //VarDec -> VarDec LB INT RB
+    if(VarDec->child_num == 1){
+        return;
+    }
+    else{
+        // int size = 1;
+        // node p = VarDec->child[0];
+        // while(p->child_num != 1){
+        //     p = p->child[0];
+        //     szie*=(*(int*)p->child[2]->literal);
+        // }
+        // FieldList field = searchField(p->child[0]->literal);
+        // Operand dec_name = malloc(sizeof(struct Operand_));
+        // dec_name->kind = VARIABLE;
+        // dec_name->u.var_no = field->var_no;
+        // InterCode code = malloc(sizeof(struct InterCode));
+        // code->kind = DEC;
+        // code->u.dec_name = dec_name;
+        // return code;
+    }
+}
+void translate_FunDec(node FunDec){
     //FunDec -> ID LP VarList RP
     //FunDec -> ID LP RP
     FieldList field = searchField(FunDec->child[0]->literal);
     Operand func = malloc(sizeof(struct Operand_));
     func->kind = FUNCTION;
     func->u.var_no = field->var_no;
+    insert_Intercode(func);
     if(FunDec->child_num == 4){
-        InterCode code = translate_VarList(FunDec->child[2]);
-        return link(func, code);
-    }
-    else{
-        return code;
+        translate_VarList(FunDec->child[2]);
     }
 }
-InterCode translate_VarList(node VarList){
+void translate_VarList(node VarList){
     //VarList -> ParamDec COMMA VarList
     //VarList -> ParamDec
-    InterCode code1 = translate_ParamDec(VarList->child[0]);
+    translate_ParamDec(VarList->child[0]);
     if(VarList->child_num == 3){
-        InterCode code2 = translate_VarList(VarList->child[2]);
-        return link(code1, code2);
-    }
-    else{
-        return code1;
+        translate_VarList(VarList->child[2]);
     }
 }
-InterCode translate_ParamDec(node ParamDec){
+void translate_ParamDec(node ParamDec){
     //ParamDec -> Specifier VarDec
     FieldList field = searchField(ParamDec->child[1]->child[0]->literal);
     Operand param = malloc(sizeof(struct Operand_));
     param->kind = VARIABLE;
     param->u.var_no = field->var_no;
-    return param;
+    insert_Intercode(param);
 }
-InterCode translate_CompSt(node CompSt){
+void translate_CompSt(node CompSt){
     //CompSt -> LC DefList StmtList RC
-    InterCode code1 = translate_DefList(CompSt->child[1]);
-    InterCode code2 = translate_StmtList(CompSt->child[2]);
-    return link(code1, code2);
+    translate_DefList(CompSt->child[1]);
+    translate_StmtList(CompSt->child[2]);
 }
-InterCode translate_DefList(node DefList){
+void translate_StmtList(node StmtList){
+    //StmtList -> Stmt StmtList
+    //StmtList -> NULL
+    if(StmtList->child_num == 0){
+        return;
+    }
+    InterCode code = translate_Stmt(StmtList->child[0]);
+    insert_Intercode(code);
+    translate_StmtList(StmtList->child[1]);
+}
+void translate_DefList(node DefList){
     //DefList -> Def DefList
     //DefList -> NULL
     if(DefList->child_num == 0){
-        return NULL;
+        return;
     }
-    InterCode code1 = translate_Def(DefList->child[0]);
-    InterCode code2 = translate_DefList(DefList->child[1]);
-    return link(code1, code2);
+    translate_Def(DefList->child[0]);
+    translate_DefList(DefList->child[1]);
+}
+void translate_Def(node Def){
+    //Def -> Specifier DecList SEMI
+    translate_DecList(Def->child[1]);
+}
+void translate_DecList(node DecList){
+    //DecList -> Dec
+    //DecList -> Dec COMMA DecList
+    translate_Dec(DecList->child[0]);
+    if(DecList->child_num == 3){
+        translate_DecList(DecList->child[2]);
+    }
+}
+void translate_Dec(node Dec){
+    //Dec -> VarDec
+    //Dec -> VarDec ASSIGNOP Exp
+    if(Dec->child_num == 1){
+        translate_VarDec(Dec->child[0]);
+    }
+    else{
+        Operand t1 = new_temp();
+        InterCode code1 = translate_Exp(Dec->child[2], t1);
+        FieldList field = searchField(Dec->child[0]->child[0]->literal);
+        Operand dec_name = malloc(sizeof(struct Operand_));
+        dec_name->kind = VARIABLE;
+        dec_name->u.var_no = field->var_no;
+        InterCode code2 = malloc(sizeof(struct InterCode));
+        code2->kind = ASSIGN;
+        code2->u.assign.right = t1;
+        code2->u.assign.left = dec_name;
+        insert_Intercode(link(code1, code2));
+    }
 }
 InterCode translate_Cond(node Exp, Operand label_true, Operand label_false){
     if(!strcmp(Exp->child[1]->name,"RELOP")){
