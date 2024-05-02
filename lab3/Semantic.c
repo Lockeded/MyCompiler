@@ -4,6 +4,14 @@ extern FieldList HeadField;
 void Program(node root){
     //Program -> ExtDefList
     initHeadField();
+    Type type = (Type)malloc(sizeof(struct Type_));
+    type->kind = FUNCTION;
+    FieldList read = createField("read", type);
+    FieldList write = createField("write", type);
+    read->argc = 0;
+    write->argc = 1;
+    insertField(read);
+    insertField(write);
     ExtDefList(root->child[0]);
     checkFunction();
 }

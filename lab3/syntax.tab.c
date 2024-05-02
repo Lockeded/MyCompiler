@@ -72,8 +72,9 @@
     #include "Node.h"
     #include "lex.yy.c"
     #include "Semantic.h"
+    #include "InterCode.h"
 
-#line 77 "syntax.tab.c"
+#line 78 "syntax.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -158,11 +159,11 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 7 "syntax.y"
+#line 8 "syntax.y"
 
     node type_node;
 
-#line 166 "syntax.tab.c"
+#line 167 "syntax.tab.c"
 
 };
 typedef union YYSTYPE YYSTYPE;
@@ -540,16 +541,16 @@ static const yytype_int8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    35,    35,    37,    38,    40,    41,    42,    43,    44,
-      45,    46,    47,    48,    49,    51,    52,    53,    55,    56,
-      58,    59,    60,    61,    63,    64,    66,    68,    69,    70,
-      71,    72,    74,    75,    76,    77,    78,    80,    81,    83,
-      85,    86,    88,    89,    91,    92,    93,    94,    95,    96,
-      97,    98,    99,   100,   101,   102,   103,   105,   106,   108,
-     109,   110,   112,   113,   115,   116,   118,   119,   120,   121,
-     122,   123,   124,   125,   126,   127,   128,   129,   130,   131,
-     132,   133,   134,   135,   136,   137,   138,   139,   140,   141,
-     142,   143,   144,   145,   146,   147,   148,   150,   151
+       0,    36,    36,    38,    39,    41,    42,    43,    44,    45,
+      46,    47,    48,    49,    50,    52,    53,    54,    56,    57,
+      59,    60,    61,    62,    64,    65,    67,    69,    70,    71,
+      72,    73,    75,    76,    77,    78,    79,    81,    82,    84,
+      86,    87,    89,    90,    92,    93,    94,    95,    96,    97,
+      98,    99,   100,   101,   102,   103,   104,   106,   107,   109,
+     110,   111,   113,   114,   116,   117,   119,   120,   121,   122,
+     123,   124,   125,   126,   127,   128,   129,   130,   131,   132,
+     133,   134,   135,   136,   137,   138,   139,   140,   141,   142,
+     143,   144,   145,   146,   147,   148,   149,   151,   152
 };
 #endif
 
@@ -1532,589 +1533,589 @@ yyreduce:
   switch (yyn)
     {
   case 2:
-#line 35 "syntax.y"
-                     { (yyval.type_node)= create_node("Program", 0, 1, create_child_list(1,(node []){(yyvsp[0].type_node)}));semantic((yyval.type_node));}
-#line 1538 "syntax.tab.c"
+#line 36 "syntax.y"
+                     { (yyval.type_node)= create_node("Program", 0, 1, create_child_list(1,(node []){(yyvsp[0].type_node)}));semantic((yyval.type_node));translate_Program((yyval.type_node));}
+#line 1539 "syntax.tab.c"
     break;
 
   case 3:
-#line 37 "syntax.y"
+#line 38 "syntax.y"
                                { (yyval.type_node) = create_node("ExtDefList", 0,2,create_child_list(2, (node[]){(yyvsp[-1].type_node), (yyvsp[0].type_node)})); }
-#line 1544 "syntax.tab.c"
+#line 1545 "syntax.tab.c"
     break;
 
   case 4:
-#line 38 "syntax.y"
+#line 39 "syntax.y"
                       { (yyval.type_node) = create_node("NULL",-1,0,NULL);}
-#line 1550 "syntax.tab.c"
+#line 1551 "syntax.tab.c"
     break;
 
   case 5:
-#line 40 "syntax.y"
+#line 41 "syntax.y"
                                  { (yyval.type_node)= create_node("ExtDef", 0, 3, create_child_list(3, (node[]){(yyvsp[-2].type_node), (yyvsp[-1].type_node), (yyvsp[0].type_node)})); }
-#line 1556 "syntax.tab.c"
+#line 1557 "syntax.tab.c"
     break;
 
   case 6:
-#line 41 "syntax.y"
+#line 42 "syntax.y"
                             {(yyval.type_node)= create_node("ExtDef", 0, 3, create_child_list(3, (node[]){(yyvsp[-2].type_node), (yyvsp[-1].type_node), (yyvsp[0].type_node)})); }
-#line 1562 "syntax.tab.c"
+#line 1563 "syntax.tab.c"
     break;
 
   case 7:
-#line 42 "syntax.y"
+#line 43 "syntax.y"
                                 { (yyval.type_node)= create_node("ExtDef", 0, 3, create_child_list(3, (node[]){(yyvsp[-2].type_node), (yyvsp[-1].type_node), (yyvsp[0].type_node)})); }
-#line 1568 "syntax.tab.c"
+#line 1569 "syntax.tab.c"
     break;
 
   case 8:
-#line 43 "syntax.y"
+#line 44 "syntax.y"
                      { (yyval.type_node)= create_node("ExtDef", 0, 2, create_child_list(2,(node[]){(yyvsp[-1].type_node),(yyvsp[0].type_node)})); }
-#line 1574 "syntax.tab.c"
+#line 1575 "syntax.tab.c"
     break;
 
   case 9:
-#line 44 "syntax.y"
+#line 45 "syntax.y"
                           {}
-#line 1580 "syntax.tab.c"
+#line 1581 "syntax.tab.c"
     break;
 
   case 10:
-#line 45 "syntax.y"
+#line 46 "syntax.y"
                  {}
-#line 1586 "syntax.tab.c"
+#line 1587 "syntax.tab.c"
     break;
 
   case 11:
-#line 46 "syntax.y"
+#line 47 "syntax.y"
                {}
-#line 1592 "syntax.tab.c"
+#line 1593 "syntax.tab.c"
     break;
 
   case 12:
-#line 47 "syntax.y"
+#line 48 "syntax.y"
                 {}
-#line 1598 "syntax.tab.c"
+#line 1599 "syntax.tab.c"
     break;
 
   case 13:
-#line 48 "syntax.y"
+#line 49 "syntax.y"
                            {}
-#line 1604 "syntax.tab.c"
+#line 1605 "syntax.tab.c"
     break;
 
   case 14:
-#line 49 "syntax.y"
+#line 50 "syntax.y"
                            {}
-#line 1610 "syntax.tab.c"
+#line 1611 "syntax.tab.c"
     break;
 
   case 15:
-#line 51 "syntax.y"
+#line 52 "syntax.y"
                     { (yyval.type_node)= create_node("ExtDecList", 0, 1, create_child_list(1,(node[]){(yyvsp[0].type_node)})); }
-#line 1616 "syntax.tab.c"
+#line 1617 "syntax.tab.c"
     break;
 
   case 16:
-#line 52 "syntax.y"
+#line 53 "syntax.y"
                               { (yyval.type_node)= create_node("ExtDecList", 0, 3, create_child_list(3, (node[]){(yyvsp[-2].type_node), (yyvsp[-1].type_node), (yyvsp[0].type_node)})); }
-#line 1622 "syntax.tab.c"
+#line 1623 "syntax.tab.c"
     break;
 
   case 17:
-#line 53 "syntax.y"
+#line 54 "syntax.y"
                               {}
-#line 1628 "syntax.tab.c"
+#line 1629 "syntax.tab.c"
     break;
 
   case 18:
-#line 55 "syntax.y"
+#line 56 "syntax.y"
                  { (yyval.type_node)= create_node("Specifier", 0, 1, create_child_list(1,(node[]){(yyvsp[0].type_node)})); }
-#line 1634 "syntax.tab.c"
+#line 1635 "syntax.tab.c"
     break;
 
   case 19:
-#line 56 "syntax.y"
+#line 57 "syntax.y"
                       { (yyval.type_node)= create_node("Specifier", 0, 1, create_child_list(1,(node[]){(yyvsp[0].type_node)})); }
-#line 1640 "syntax.tab.c"
+#line 1641 "syntax.tab.c"
     break;
 
   case 20:
-#line 58 "syntax.y"
+#line 59 "syntax.y"
                                               { (yyval.type_node)= create_node("StructSpecifier", 0, 5, create_child_list(5, (node[]){(yyvsp[-4].type_node), (yyvsp[-3].type_node), (yyvsp[-2].type_node), (yyvsp[-1].type_node), (yyvsp[0].type_node)})); }
-#line 1646 "syntax.tab.c"
+#line 1647 "syntax.tab.c"
     break;
 
   case 21:
-#line 59 "syntax.y"
+#line 60 "syntax.y"
                  { (yyval.type_node)= create_node("StructSpecifier", 0, 2, create_child_list(2, (node[]){(yyvsp[-1].type_node), (yyvsp[0].type_node)})); }
-#line 1652 "syntax.tab.c"
+#line 1653 "syntax.tab.c"
     break;
 
   case 22:
-#line 60 "syntax.y"
+#line 61 "syntax.y"
                        {}
-#line 1658 "syntax.tab.c"
+#line 1659 "syntax.tab.c"
     break;
 
   case 23:
-#line 61 "syntax.y"
+#line 62 "syntax.y"
                                  {}
-#line 1664 "syntax.tab.c"
+#line 1665 "syntax.tab.c"
     break;
 
   case 24:
-#line 63 "syntax.y"
+#line 64 "syntax.y"
             { (yyval.type_node)= create_node("OptTag", 0, 1, create_child_list(1,(node[]){(yyvsp[0].type_node)})); }
-#line 1670 "syntax.tab.c"
+#line 1671 "syntax.tab.c"
     break;
 
   case 25:
-#line 64 "syntax.y"
+#line 65 "syntax.y"
                       { (yyval.type_node) = create_node("NULL",-1,0,NULL);; }
-#line 1676 "syntax.tab.c"
+#line 1677 "syntax.tab.c"
     break;
 
   case 26:
-#line 66 "syntax.y"
+#line 67 "syntax.y"
          { (yyval.type_node)= create_node("Tag", 0, 1, create_child_list(1,(node[]){(yyvsp[0].type_node)})); }
-#line 1682 "syntax.tab.c"
+#line 1683 "syntax.tab.c"
     break;
 
   case 27:
-#line 68 "syntax.y"
+#line 69 "syntax.y"
             { (yyval.type_node)= create_node("VarDec", 0, 1, create_child_list(1,(node[]){(yyvsp[0].type_node)})); }
-#line 1688 "syntax.tab.c"
+#line 1689 "syntax.tab.c"
     break;
 
   case 28:
-#line 69 "syntax.y"
+#line 70 "syntax.y"
                        { (yyval.type_node)= create_node("VarDec", 0, 4, create_child_list(4, (node[]){(yyvsp[-3].type_node), (yyvsp[-2].type_node), (yyvsp[-1].type_node), (yyvsp[0].type_node)})); }
-#line 1694 "syntax.tab.c"
+#line 1695 "syntax.tab.c"
     break;
 
   case 29:
-#line 70 "syntax.y"
+#line 71 "syntax.y"
                              {}
-#line 1700 "syntax.tab.c"
+#line 1701 "syntax.tab.c"
     break;
 
   case 30:
-#line 71 "syntax.y"
+#line 72 "syntax.y"
                          {}
-#line 1706 "syntax.tab.c"
+#line 1707 "syntax.tab.c"
     break;
 
   case 31:
-#line 72 "syntax.y"
+#line 73 "syntax.y"
                {}
-#line 1712 "syntax.tab.c"
+#line 1713 "syntax.tab.c"
     break;
 
   case 32:
-#line 74 "syntax.y"
+#line 75 "syntax.y"
                          { (yyval.type_node)= create_node("FunDec", 0, 4, create_child_list(4, (node[]){(yyvsp[-3].type_node), (yyvsp[-2].type_node), (yyvsp[-1].type_node), (yyvsp[0].type_node)})); }
-#line 1718 "syntax.tab.c"
+#line 1719 "syntax.tab.c"
     break;
 
   case 33:
-#line 75 "syntax.y"
+#line 76 "syntax.y"
                { (yyval.type_node)= create_node("FunDec", 0, 3, create_child_list(3,(node[]){(yyvsp[-2].type_node), (yyvsp[-1].type_node), (yyvsp[0].type_node)})); }
-#line 1724 "syntax.tab.c"
+#line 1725 "syntax.tab.c"
     break;
 
   case 34:
-#line 76 "syntax.y"
+#line 77 "syntax.y"
                      {}
-#line 1730 "syntax.tab.c"
+#line 1731 "syntax.tab.c"
     break;
 
   case 35:
-#line 77 "syntax.y"
+#line 78 "syntax.y"
                   {}
-#line 1736 "syntax.tab.c"
+#line 1737 "syntax.tab.c"
     break;
 
   case 36:
-#line 78 "syntax.y"
+#line 79 "syntax.y"
                           {}
-#line 1742 "syntax.tab.c"
+#line 1743 "syntax.tab.c"
     break;
 
   case 37:
-#line 80 "syntax.y"
+#line 81 "syntax.y"
                                  { (yyval.type_node)= create_node("VarList", 0, 3, create_child_list(3, (node[]){(yyvsp[-2].type_node), (yyvsp[-1].type_node), (yyvsp[0].type_node)})); }
-#line 1748 "syntax.tab.c"
+#line 1749 "syntax.tab.c"
     break;
 
   case 38:
-#line 81 "syntax.y"
+#line 82 "syntax.y"
                { (yyval.type_node)= create_node("VarList", 0, 1, create_child_list(1,(node[]){(yyvsp[0].type_node)})); }
-#line 1754 "syntax.tab.c"
+#line 1755 "syntax.tab.c"
     break;
 
   case 39:
-#line 83 "syntax.y"
+#line 84 "syntax.y"
                             { (yyval.type_node)= create_node("ParamDec", 0, 2, create_child_list(2, (node[]){(yyvsp[-1].type_node), (yyvsp[0].type_node)})); }
-#line 1760 "syntax.tab.c"
+#line 1761 "syntax.tab.c"
     break;
 
   case 40:
-#line 85 "syntax.y"
+#line 86 "syntax.y"
                                 { (yyval.type_node)= create_node("CompSt", 0, 4, create_child_list(4, (node[]){(yyvsp[-3].type_node), (yyvsp[-2].type_node), (yyvsp[-1].type_node), (yyvsp[0].type_node)})); }
-#line 1766 "syntax.tab.c"
+#line 1767 "syntax.tab.c"
     break;
 
   case 41:
-#line 86 "syntax.y"
+#line 87 "syntax.y"
                {}
-#line 1772 "syntax.tab.c"
+#line 1773 "syntax.tab.c"
     break;
 
   case 42:
-#line 88 "syntax.y"
+#line 89 "syntax.y"
                          { (yyval.type_node)= create_node("StmtList", 0, 2, create_child_list(2, (node[]){(yyvsp[-1].type_node), (yyvsp[0].type_node)})); }
-#line 1778 "syntax.tab.c"
+#line 1779 "syntax.tab.c"
     break;
 
   case 43:
-#line 89 "syntax.y"
+#line 90 "syntax.y"
                       { (yyval.type_node) = create_node("NULL",-1,0,NULL);; }
-#line 1784 "syntax.tab.c"
+#line 1785 "syntax.tab.c"
     break;
 
   case 44:
-#line 91 "syntax.y"
+#line 92 "syntax.y"
                 { (yyval.type_node)= create_node("Stmt", 0, 2, create_child_list(2,(node[]){(yyvsp[-1].type_node), (yyvsp[0].type_node)})); }
-#line 1790 "syntax.tab.c"
+#line 1791 "syntax.tab.c"
     break;
 
   case 45:
-#line 92 "syntax.y"
+#line 93 "syntax.y"
              { (yyval.type_node)= create_node("Stmt", 0, 1, create_child_list(1,(node[]){(yyvsp[0].type_node)}));  }
-#line 1796 "syntax.tab.c"
+#line 1797 "syntax.tab.c"
     break;
 
   case 46:
-#line 93 "syntax.y"
+#line 94 "syntax.y"
                       { (yyval.type_node)= create_node("Stmt", 0, 3, create_child_list(3, (node[]){(yyvsp[-2].type_node), (yyvsp[-1].type_node), (yyvsp[0].type_node)})); }
-#line 1802 "syntax.tab.c"
+#line 1803 "syntax.tab.c"
     break;
 
   case 47:
-#line 94 "syntax.y"
+#line 95 "syntax.y"
                         { (yyval.type_node)= create_node("Stmt", 0, 5, create_child_list(5, (node[]){(yyvsp[-4].type_node), (yyvsp[-3].type_node), (yyvsp[-2].type_node), (yyvsp[-1].type_node), (yyvsp[0].type_node)})); }
-#line 1808 "syntax.tab.c"
+#line 1809 "syntax.tab.c"
     break;
 
   case 48:
-#line 95 "syntax.y"
+#line 96 "syntax.y"
                                   { (yyval.type_node)= create_node("Stmt", 0, 7, create_child_list(7, (node[]){(yyvsp[-6].type_node), (yyvsp[-5].type_node), (yyvsp[-4].type_node), (yyvsp[-3].type_node), (yyvsp[-2].type_node),(yyvsp[-1].type_node), (yyvsp[0].type_node)})); }
-#line 1814 "syntax.tab.c"
+#line 1815 "syntax.tab.c"
     break;
 
   case 49:
-#line 96 "syntax.y"
+#line 97 "syntax.y"
                            { (yyval.type_node)= create_node("Stmt", 0, 5, create_child_list(5, (node[]){(yyvsp[-4].type_node), (yyvsp[-3].type_node), (yyvsp[-2].type_node), (yyvsp[-1].type_node), (yyvsp[0].type_node)})); }
-#line 1820 "syntax.tab.c"
+#line 1821 "syntax.tab.c"
     break;
 
   case 50:
-#line 97 "syntax.y"
+#line 98 "syntax.y"
                            {}
-#line 1826 "syntax.tab.c"
+#line 1827 "syntax.tab.c"
     break;
 
   case 51:
-#line 98 "syntax.y"
+#line 99 "syntax.y"
                      {}
-#line 1832 "syntax.tab.c"
+#line 1833 "syntax.tab.c"
     break;
 
   case 52:
-#line 99 "syntax.y"
+#line 100 "syntax.y"
                      {}
-#line 1838 "syntax.tab.c"
+#line 1839 "syntax.tab.c"
     break;
 
   case 53:
-#line 100 "syntax.y"
+#line 101 "syntax.y"
                  {}
-#line 1844 "syntax.tab.c"
+#line 1845 "syntax.tab.c"
     break;
 
   case 54:
-#line 101 "syntax.y"
+#line 102 "syntax.y"
                      {}
-#line 1850 "syntax.tab.c"
+#line 1851 "syntax.tab.c"
     break;
 
   case 55:
-#line 102 "syntax.y"
+#line 103 "syntax.y"
                       {}
-#line 1856 "syntax.tab.c"
+#line 1857 "syntax.tab.c"
     break;
 
   case 56:
-#line 103 "syntax.y"
+#line 104 "syntax.y"
                         {}
-#line 1862 "syntax.tab.c"
+#line 1863 "syntax.tab.c"
     break;
 
   case 57:
-#line 105 "syntax.y"
+#line 106 "syntax.y"
                       { (yyval.type_node)= create_node("DefList", 0, 2, create_child_list(2, (node[]){(yyvsp[-1].type_node), (yyvsp[0].type_node)})); }
-#line 1868 "syntax.tab.c"
+#line 1869 "syntax.tab.c"
     break;
 
   case 58:
-#line 106 "syntax.y"
+#line 107 "syntax.y"
                       { (yyval.type_node) = create_node("NULL",-1,0,NULL);; }
-#line 1874 "syntax.tab.c"
+#line 1875 "syntax.tab.c"
     break;
 
   case 59:
-#line 108 "syntax.y"
+#line 109 "syntax.y"
                              { (yyval.type_node)= create_node("Def", 0, 3, create_child_list(3, (node[]){(yyvsp[-2].type_node), (yyvsp[-1].type_node), (yyvsp[0].type_node)})); }
-#line 1880 "syntax.tab.c"
+#line 1881 "syntax.tab.c"
     break;
 
   case 60:
-#line 109 "syntax.y"
+#line 110 "syntax.y"
                           {}
-#line 1886 "syntax.tab.c"
+#line 1887 "syntax.tab.c"
     break;
 
   case 61:
-#line 110 "syntax.y"
+#line 111 "syntax.y"
                          {}
-#line 1892 "syntax.tab.c"
+#line 1893 "syntax.tab.c"
     break;
 
   case 62:
-#line 112 "syntax.y"
+#line 113 "syntax.y"
               { (yyval.type_node)= create_node("DecList", 0, 1, create_child_list(1,(node[]){(yyvsp[0].type_node)})); }
-#line 1898 "syntax.tab.c"
+#line 1899 "syntax.tab.c"
     break;
 
   case 63:
-#line 113 "syntax.y"
+#line 114 "syntax.y"
                         { (yyval.type_node)= create_node("DecList", 0, 3, create_child_list(3, (node[]){(yyvsp[-2].type_node), (yyvsp[-1].type_node), (yyvsp[0].type_node)})); }
-#line 1904 "syntax.tab.c"
+#line 1905 "syntax.tab.c"
     break;
 
   case 64:
-#line 115 "syntax.y"
+#line 116 "syntax.y"
              { (yyval.type_node)= create_node("Dec", 0, 1, create_child_list(1,(node[]){(yyvsp[0].type_node)})); }
-#line 1910 "syntax.tab.c"
+#line 1911 "syntax.tab.c"
     break;
 
   case 65:
-#line 116 "syntax.y"
+#line 117 "syntax.y"
                           { (yyval.type_node)= create_node("Dec", 0, 3, create_child_list(3, (node[]){(yyvsp[-2].type_node), (yyvsp[-1].type_node),(yyvsp[0].type_node)})); }
-#line 1916 "syntax.tab.c"
+#line 1917 "syntax.tab.c"
     break;
 
   case 66:
-#line 118 "syntax.y"
+#line 119 "syntax.y"
                        { (yyval.type_node)= create_node("Exp", 0, 3, create_child_list(3, (node[]){(yyvsp[-2].type_node), (yyvsp[-1].type_node),(yyvsp[0].type_node)})); }
-#line 1922 "syntax.tab.c"
+#line 1923 "syntax.tab.c"
     break;
 
   case 67:
-#line 119 "syntax.y"
+#line 120 "syntax.y"
                   { (yyval.type_node)= create_node("Exp", 0, 3, create_child_list(3, (node[]){(yyvsp[-2].type_node), (yyvsp[-1].type_node),(yyvsp[0].type_node)})); }
-#line 1928 "syntax.tab.c"
+#line 1929 "syntax.tab.c"
     break;
 
   case 68:
-#line 120 "syntax.y"
+#line 121 "syntax.y"
                  { (yyval.type_node)= create_node("Exp", 0, 3, create_child_list(3, (node[]){(yyvsp[-2].type_node), (yyvsp[-1].type_node),(yyvsp[0].type_node)})); }
-#line 1934 "syntax.tab.c"
+#line 1935 "syntax.tab.c"
     break;
 
   case 69:
-#line 121 "syntax.y"
+#line 122 "syntax.y"
                     { (yyval.type_node)= create_node("Exp", 0, 3, create_child_list(3, (node[]){(yyvsp[-2].type_node), (yyvsp[-1].type_node),(yyvsp[0].type_node)})); }
-#line 1940 "syntax.tab.c"
+#line 1941 "syntax.tab.c"
     break;
 
   case 70:
-#line 122 "syntax.y"
+#line 123 "syntax.y"
                    { (yyval.type_node)= create_node("Exp", 0, 3, create_child_list(3, (node[]){(yyvsp[-2].type_node), (yyvsp[-1].type_node),(yyvsp[0].type_node)})); }
-#line 1946 "syntax.tab.c"
+#line 1947 "syntax.tab.c"
     break;
 
   case 71:
-#line 123 "syntax.y"
+#line 124 "syntax.y"
                     { (yyval.type_node)= create_node("Exp", 0, 3, create_child_list(3, (node[]){(yyvsp[-2].type_node), (yyvsp[-1].type_node),(yyvsp[0].type_node)})); }
-#line 1952 "syntax.tab.c"
+#line 1953 "syntax.tab.c"
     break;
 
   case 72:
-#line 124 "syntax.y"
+#line 125 "syntax.y"
                    { (yyval.type_node)= create_node("Exp", 0, 3, create_child_list(3, (node[]){(yyvsp[-2].type_node), (yyvsp[-1].type_node),(yyvsp[0].type_node)})); }
-#line 1958 "syntax.tab.c"
+#line 1959 "syntax.tab.c"
     break;
 
   case 73:
-#line 125 "syntax.y"
+#line 126 "syntax.y"
                   { (yyval.type_node)= create_node("Exp", 0, 3, create_child_list(3, (node[]){(yyvsp[-2].type_node), (yyvsp[-1].type_node),(yyvsp[0].type_node)})); }
-#line 1964 "syntax.tab.c"
+#line 1965 "syntax.tab.c"
     break;
 
   case 74:
-#line 126 "syntax.y"
+#line 127 "syntax.y"
                 { (yyval.type_node)= create_node("Exp", 0, 3, create_child_list(3, (node[]){(yyvsp[-2].type_node), (yyvsp[-1].type_node), (yyvsp[0].type_node)})); }
-#line 1970 "syntax.tab.c"
+#line 1971 "syntax.tab.c"
     break;
 
   case 75:
-#line 127 "syntax.y"
+#line 128 "syntax.y"
                 { (yyval.type_node)= create_node("Exp", 0, 2, create_child_list(2, (node[]){(yyvsp[-1].type_node), (yyvsp[0].type_node)})); }
-#line 1976 "syntax.tab.c"
+#line 1977 "syntax.tab.c"
     break;
 
   case 76:
-#line 128 "syntax.y"
+#line 129 "syntax.y"
               { (yyval.type_node)= create_node("Exp", 0, 2, create_child_list(2, (node[]){(yyvsp[-1].type_node), (yyvsp[0].type_node)})); }
-#line 1982 "syntax.tab.c"
+#line 1983 "syntax.tab.c"
     break;
 
   case 77:
-#line 129 "syntax.y"
+#line 130 "syntax.y"
                     { (yyval.type_node)= create_node("Exp", 0, 4, create_child_list(4, (node[]){(yyvsp[-3].type_node),(yyvsp[-2].type_node), (yyvsp[-1].type_node),(yyvsp[0].type_node)})); }
-#line 1988 "syntax.tab.c"
+#line 1989 "syntax.tab.c"
     break;
 
   case 78:
-#line 130 "syntax.y"
+#line 131 "syntax.y"
                { (yyval.type_node)= create_node("Exp", 0, 3, create_child_list(3, (node[]){(yyvsp[-2].type_node),(yyvsp[-1].type_node), (yyvsp[0].type_node)})); }
-#line 1994 "syntax.tab.c"
+#line 1995 "syntax.tab.c"
     break;
 
   case 79:
-#line 131 "syntax.y"
+#line 132 "syntax.y"
                     { (yyval.type_node)= create_node("Exp", 0, 4, create_child_list(4, (node[]){(yyvsp[-3].type_node), (yyvsp[-2].type_node), (yyvsp[-1].type_node), (yyvsp[0].type_node)})); }
-#line 2000 "syntax.tab.c"
+#line 2001 "syntax.tab.c"
     break;
 
   case 80:
-#line 132 "syntax.y"
+#line 133 "syntax.y"
                  { (yyval.type_node)= create_node("Exp", 0, 3, create_child_list(3, (node[]){(yyvsp[-2].type_node), (yyvsp[-1].type_node),(yyvsp[0].type_node)})); }
-#line 2006 "syntax.tab.c"
+#line 2007 "syntax.tab.c"
     break;
 
   case 81:
-#line 133 "syntax.y"
+#line 134 "syntax.y"
          { (yyval.type_node)= create_node("Exp", 0, 1, create_child_list(1,(node[]){(yyvsp[0].type_node)})); }
-#line 2012 "syntax.tab.c"
+#line 2013 "syntax.tab.c"
     break;
 
   case 82:
-#line 134 "syntax.y"
+#line 135 "syntax.y"
           { (yyval.type_node)= create_node("Exp", 0, 1, create_child_list(1,(node[]){(yyvsp[0].type_node)})); }
-#line 2018 "syntax.tab.c"
+#line 2019 "syntax.tab.c"
     break;
 
   case 83:
-#line 135 "syntax.y"
+#line 136 "syntax.y"
             { (yyval.type_node)= create_node("Exp", 0, 1, create_child_list(1,(node[]){(yyvsp[0].type_node)})); }
-#line 2024 "syntax.tab.c"
+#line 2025 "syntax.tab.c"
     break;
 
   case 84:
-#line 136 "syntax.y"
+#line 137 "syntax.y"
                   {}
-#line 2030 "syntax.tab.c"
+#line 2031 "syntax.tab.c"
     break;
 
   case 85:
-#line 137 "syntax.y"
+#line 138 "syntax.y"
                  {}
-#line 2036 "syntax.tab.c"
+#line 2037 "syntax.tab.c"
     break;
 
   case 86:
-#line 138 "syntax.y"
+#line 139 "syntax.y"
                   {}
-#line 2042 "syntax.tab.c"
+#line 2043 "syntax.tab.c"
     break;
 
   case 87:
-#line 139 "syntax.y"
+#line 140 "syntax.y"
                               {}
-#line 2048 "syntax.tab.c"
+#line 2049 "syntax.tab.c"
     break;
 
   case 88:
-#line 140 "syntax.y"
+#line 141 "syntax.y"
                          {}
-#line 2054 "syntax.tab.c"
+#line 2055 "syntax.tab.c"
     break;
 
   case 89:
-#line 141 "syntax.y"
+#line 142 "syntax.y"
                         {}
-#line 2060 "syntax.tab.c"
+#line 2061 "syntax.tab.c"
     break;
 
   case 90:
-#line 142 "syntax.y"
+#line 143 "syntax.y"
                            {}
-#line 2066 "syntax.tab.c"
+#line 2067 "syntax.tab.c"
     break;
 
   case 91:
-#line 143 "syntax.y"
+#line 144 "syntax.y"
                           {}
-#line 2072 "syntax.tab.c"
+#line 2073 "syntax.tab.c"
     break;
 
   case 92:
-#line 144 "syntax.y"
+#line 145 "syntax.y"
                            {}
-#line 2078 "syntax.tab.c"
+#line 2079 "syntax.tab.c"
     break;
 
   case 93:
-#line 145 "syntax.y"
+#line 146 "syntax.y"
                           {}
-#line 2084 "syntax.tab.c"
+#line 2085 "syntax.tab.c"
     break;
 
   case 94:
-#line 146 "syntax.y"
+#line 147 "syntax.y"
                           {}
-#line 2090 "syntax.tab.c"
+#line 2091 "syntax.tab.c"
     break;
 
   case 95:
-#line 147 "syntax.y"
+#line 148 "syntax.y"
                          {}
-#line 2096 "syntax.tab.c"
+#line 2097 "syntax.tab.c"
     break;
 
   case 96:
-#line 148 "syntax.y"
+#line 149 "syntax.y"
                        {}
-#line 2102 "syntax.tab.c"
+#line 2103 "syntax.tab.c"
     break;
 
   case 97:
-#line 150 "syntax.y"
+#line 151 "syntax.y"
                       { (yyval.type_node)= create_node("Args", 0, 3, create_child_list(3, (node[]){(yyvsp[-2].type_node),(yyvsp[-1].type_node), (yyvsp[0].type_node)})); }
-#line 2108 "syntax.tab.c"
+#line 2109 "syntax.tab.c"
     break;
 
   case 98:
-#line 151 "syntax.y"
+#line 152 "syntax.y"
           { (yyval.type_node)= create_node("Args", 0, 1, create_child_list(1,(node[]){(yyvsp[0].type_node)})); }
-#line 2114 "syntax.tab.c"
+#line 2115 "syntax.tab.c"
     break;
 
 
-#line 2118 "syntax.tab.c"
+#line 2119 "syntax.tab.c"
 
       default: break;
     }
@@ -2346,5 +2347,5 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 154 "syntax.y"
+#line 155 "syntax.y"
 

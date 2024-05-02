@@ -1,35 +1,65 @@
 #include "InterCode.h"
-#include "semantic.h"
-extern int temp_no;
-extern int label_no;
+InterCode head=NULL,tail=NULL;
+extern FieldList HeadField;
+int var_no = 0;
+int label_no = 0;
 void insert_Intercode(InterCode code){
-    if(head == NULL){
+    if (head == NULL)
+    {
         head = code;
         tail = code;
     }
-    else{
+    else
+    {
         tail->next = code;
         code->prev = tail;
-        tail = code;
     }
+    
 }
 void print_Intercode(){
-    InterCodes p = head;
-    
+    InterCode p = head;
+    while (p != NULL){
+        switch (p->kind)
+        {
+        case LABEL_:
+            printf("LABEL %s :\n", p->u.label->u.name);
+            break;
+        case FUNCTION_:
+            printf("FUNCTION %s :\n", p->u.call.func_name);
+            break;
+        case ASSIGN_:
+            if(p->u.assign.right->kind == CONSTANT_){
+                printf("%s := %d\n", p->u.assign.left->u.name, p->u.assign.right->u.value);
+            }
+            else if(p->u.assign.right->kind == VARIABLE_){
+                printf("%s := %s\n", p->u.assign.left->u.name, p->u.assign.right->u.name);
+            }
+            else if(p->u.assign.right->kind == ADDRESS_){
+                printf("%s := &%s\n", p->u.assign.left->u.name, p->u.assign.right->u.name);
+            }
+            break;
+        // case ADD_:
+        //      if()
+        // }
+        }
+        p = p->next;
+    }
 }
 Operand new_temp(){
     Operand temp = (Operand)malloc(sizeof(struct Operand_));
-    temp->kind = VARIABLE;
-    temp->u.var_no = temp_no++;
+    temp->kind = VARIABLE_;
+    var_no++;
+    sprintf(temp->u.name,"t%d",var_no);
     return temp;
 }
 Operand new_label(){
-    Operand label = (Operand)malloc(sizeof(struct Oprand_));
-    label->kind = LABEL;
-    // label->u.var_no = label_no++;
+    Operand label = (Operand)malloc(sizeof(struct Operand_));
+    label->kind = LABEL_;
+    label_no++;
+    sprintf(label->u.name,"t%d",label_no);
     return label;
 }
-InterCode link(InterCode code1, InterCode code2){
+InterCode link_(InterCode code1, InterCode code2){
     if(code1 == NULL){
         return code2;
     }
@@ -46,19 +76,20 @@ InterCode link(InterCode code1, InterCode code2){
 }
 Operand create_Immediate(int value){
     Operand imm = (Operand)malloc(sizeof(struct Operand_));
-    imm->kind = CONSTANT;
+    imm->kind = CONSTANT_;
     imm->u.value = value;
     return imm;
 }
 void translate_Program(node Program){
     //Program -> ExtDefList
     translate_ExtDefList(Program->child[0]);
+    print_Intercode();
 }
 void translate_ExtDefList(node ExtDefList){
     //ExtDefList -> ExtDef ExtDefList
     //ExtDefList -> NULL
     if(ExtDefList->child_num == 0){
-        return NULL;
+        return;
     }
     translate_ExtDef(ExtDefList->child[0]);
     translate_ExtDefList(ExtDefList->child[1]);
@@ -94,30 +125,26 @@ void translate_VarDec(node VarDec){
         return;
     }
     else{
-        // int size = 1;
-        // node p = VarDec->child[0];
-        // while(p->child_num != 1){
-        //     p = p->child[0];
-        //     szie*=(*(int*)p->child[2]->literal);
-        // }
-        // FieldList field = searchField(p->child[0]->literal);
-        // Operand dec_name = malloc(sizeof(struct Operand_));
-        // dec_name->kind = VARIABLE;
-        // dec_name->u.var_no = field->var_no;
-        // InterCode code = malloc(sizeof(struct InterCode));
-        // code->kind = DEC;
-        // code->u.dec_name = dec_name;
-        // return code;
+        Operand size = create_Immediate(4 *(*(int*)VarDec->child[2]->literal));
+        Operand ID = malloc(sizeof(struct Operand_));
+        ID->kind = VARIABLE_;
+        strcpy(ID->u.name, VarDec->child[0]->literal);
+        InterCode code = (InterCode)malloc(sizeof(struct InterCode_));
+        code->kind = DEC_;
+        code->u.dec.size = size;
+        code->u.dec.var = ID;
+        insert_Intercode(code);
     }
 }
 void translate_FunDec(node FunDec){
     //FunDec -> ID LP VarList RP
     //FunDec -> ID LP RP
+    printf("%s",FunDec->child[0]->literal);
     FieldList field = searchField(FunDec->child[0]->literal);
-    Operand func = malloc(sizeof(struct Operand_));
-    func->kind = FUNCTION;
-    func->u.var_no = field->var_no;
-    insert_Intercode(func);
+    InterCode code = (InterCode)malloc(sizeof(struct InterCode_));
+    code->kind = FUNCTION_;
+    strcpy(code->u.call.func_name, FunDec->child[0]->literal);
+    insert_Intercode(code);
     if(FunDec->child_num == 4){
         translate_VarList(FunDec->child[2]);
     }
@@ -133,10 +160,10 @@ void translate_VarList(node VarList){
 void translate_ParamDec(node ParamDec){
     //ParamDec -> Specifier VarDec
     FieldList field = searchField(ParamDec->child[1]->child[0]->literal);
-    Operand param = malloc(sizeof(struct Operand_));
-    param->kind = VARIABLE;
-    param->u.var_no = field->var_no;
-    insert_Intercode(param);
+    InterCode code = (InterCode)malloc(sizeof(struct InterCode_));
+    code->kind = PARAM_;
+    strcpy(code->u.call.func_name, field->name);
+    insert_Intercode(code);
 }
 void translate_CompSt(node CompSt){
     //CompSt -> LC DefList StmtList RC
@@ -185,13 +212,13 @@ void translate_Dec(node Dec){
         InterCode code1 = translate_Exp(Dec->child[2], t1);
         FieldList field = searchField(Dec->child[0]->child[0]->literal);
         Operand dec_name = malloc(sizeof(struct Operand_));
-        dec_name->kind = VARIABLE;
-        dec_name->u.var_no = field->var_no;
-        InterCode code2 = malloc(sizeof(struct InterCode));
-        code2->kind = ASSIGN;
+        dec_name->kind = VARIABLE_;
+        strcpy(dec_name->u.name, Dec->child[0]->child[0]->literal);
+        InterCode code2 = (InterCode)malloc(sizeof(struct InterCode_));
+        code2->kind = ASSIGN_;
         code2->u.assign.right = t1;
         code2->u.assign.left = dec_name;
-        insert_Intercode(link(code1, code2));
+        insert_Intercode(link_(code1, code2));
     }
 }
 InterCode translate_Cond(node Exp, Operand label_true, Operand label_false){
@@ -200,61 +227,61 @@ InterCode translate_Cond(node Exp, Operand label_true, Operand label_false){
         Operand t2 = new_temp();
         InterCode code1 = translate_Exp(Exp->child[0], t1);
         InterCode code2 = translate_Exp(Exp->child[2], t2);
-        InterCode code3 = malloc(sizeof(struct InterCode));
-        code3.kind = IF;
-        code3.u.if_goto.t1 = t1;
+        InterCode code3 = (InterCode)malloc(sizeof(struct InterCode_));
+        code3->kind = IF_;
+        code3->u.if_goto.t1 = t1;
         Operand op = malloc(sizeof(struct Operand_));
-        op->kind = RELOP;
+        op->kind = RELOP_;
         strcpy(op->u.name, Exp->child[1]->literal);
-        code3.u.if_goto.op = t2;
-        code3.u.if_goto.label_true = label_true;
+        code3->u.if_goto.op = t2;
+        code3->u.if_goto.label_true = label_true;
 
-        InterCode code4 = malloc(sizeof(struct InterCode));
-        code4.kind = GOTO;
-        code4.u.goto_label = label_false;
-        return link(code1, link(code2, link(code3, code4)));
+        InterCode code4 = (InterCode)malloc(sizeof(struct InterCode_));
+        code4->kind = GOTO_;
+        code4->u.goto_label = label_false;
+        return link_(code1, link_(code2, link_(code3, code4)));
     }
-    else if(!strcmp(child[0]->name, "NOT")){
+    else if(!strcmp(Exp->child[0]->name, "NOT")){
         return translate_Cond(Exp->child[1], label_false, label_true);
     }
-    else if(!strcmp(child[1]->name, "AND")){
+    else if(!strcmp(Exp->child[1]->name, "AND")){
         Operand label1 = new_label();
         InterCode code1 = translate_Cond(Exp->child[0], label1, label_false);
         InterCode code2 = translate_Cond(Exp->child[2], label_true, label_false);
-        InterCode code3 = malloc(sizeof(struct InterCode));
-        code3.kind = LABEL;
-        code3.u.label = label1;
-        return link(code1, link(code3, code2));
+        InterCode code3 = (InterCode)malloc(sizeof(struct InterCode_));
+        code3->kind = LABEL_;
+        code3->u.label = label1;
+        return link_(code1, link_(code3, code2));
     }
-    else if(!strcmp(child[1]->name, "OR")){
+    else if(!strcmp(Exp->child[1]->name, "OR")){
         Operand label1 = new_label();
         InterCode code1 = translate_Cond(Exp->child[0], label_true, label1);
         InterCode code2 = translate_Cond(Exp->child[2], label_true, label_false);
-        InterCode code3 = malloc(sizeof(struct InterCode));
-        code3.kind = LABEL;
-        code3.u.label = label1;
-        return link(code1, link(code3, code2));
+        InterCode code3 = (InterCode)malloc(sizeof(struct InterCode_));
+        code3->kind = LABEL_;
+        code3->u.label = label1;
+        return link_(code1, link_(code3, code2));
     }
     else{
         Operand t1 = new_temp();
         InterCode code1 = translate_Exp(Exp, t1);
-        InterCode code2 = malloc(sizeof(struct InterCode));
-        code2.kind = IF;
-        code2.u.if_goto.t1 = t1;
+        InterCode code2 = (InterCode)malloc(sizeof(struct InterCode_));
+        code2->kind = IF_;
+        code2->u.if_goto.t1 = t1;
         Operand op = malloc(sizeof(struct Operand_));
-        op->kind = RELOP;
+        op->kind = RELOP_;
         strcpy(op->u.name, "!=");
-        code2.u.if_goto.op = op;
+        code2->u.if_goto.op = op;
         Operand zero = create_Immediate(0);
-        code2.u.if_goto.t2 = zero;
-        code2.u.if_goto.label_true = label_true;
-        InterCode code3 = malloc(sizeof(struct InterCode));
-        code3.kind = GOTO;
-        code3.u.goto_label = label_false;
-        return link(code1, link(code2, code3));
+        code2->u.if_goto.t2 = zero;
+        code2->u.if_goto.label_true = label_true;
+        InterCode code3 = (InterCode)malloc(sizeof(struct InterCode_));
+        code3->kind = GOTO_;
+        code3->u.goto_label = label_false;
+        return link_(code1, link_(code2, code3));
     }
 }
-Intercode translate_Stmt(node Stmt){
+InterCode translate_Stmt(node Stmt){
     //Stmt -> Exp SEMI
     //Stmt -> CompSt
     //Stmt -> RETURN Exp SEMI
@@ -263,23 +290,23 @@ Intercode translate_Stmt(node Stmt){
     //Stmt -> WHILE LP Exp RP Stmt
 
     if(!strcmp(Stmt->child[0]->name,"Exp") && !strcmp(Stmt->child[1]->name,"SEMI")){
-        return translate_Exp(Stmt->child[0], NULL);
+        translate_Exp(Stmt->child[0], NULL);
     }
     else if(!strcmp(Stmt->child[0]->name,"CompSt")){
-        return translate_CompSt(Stmt->child[0]);
+        translate_CompSt(Stmt->child[0]);
     }
     else if(!strcmp(Stmt->child[0]->name,"IF") && Stmt->child_num == 5){
         Operand label1 = new_label();
         Operand label2 = new_label();
         InterCode code1 = translate_Cond(Stmt->child[2], label1, label2);
         InterCode code2 = translate_Stmt(Stmt->child[4]);
-        InterCode code3 = malloc(sizeof(struct InterCode));
-        InterCode code4 = malloc(sizeof(struct InterCode));
-        code3.kind = LABEL;
-        code3.u.label = label1;
-        code4.kind = LABEL;
-        code4.u.label = label2;
-        return link(code1, link(code3, link(code2, code4)));
+        InterCode code3 = (InterCode)malloc(sizeof(struct InterCode_));
+        InterCode code4 = (InterCode)malloc(sizeof(struct InterCode_));
+        code3->kind = LABEL_;
+        code3->u.label = label1;
+        code4->kind = LABEL_;
+        code4->u.label = label2;
+        return link_(code1, link_(code3, link_(code2, code4)));
     }
     else if(!strcmp(Stmt->child[0]->name,"IF") && Stmt->child_num == 7){
         Operand label1 = new_label();
@@ -288,58 +315,59 @@ Intercode translate_Stmt(node Stmt){
         InterCode code1 = translate_Cond(Stmt->child[2], label1, label2);
         InterCode code2 = translate_Stmt(Stmt->child[4]);
         InterCode code3 = translate_Stmt(Stmt->child[6]);
-        InterCode code4 = malloc(sizeof(struct InterCode));
-        InterCode code5 = malloc(sizeof(struct InterCode));
-        code4.kind = LABEL;
-        code4.u.label = label1;
-        code5.kind = LABEL;
-        code5.u.label = label2;
-        return link(code1, link(code4, link(code2, link(code5, code3))));
+        InterCode code4 = (InterCode)malloc(sizeof(struct InterCode_));
+        InterCode code5 = (InterCode)malloc(sizeof(struct InterCode_));
+        code4->kind = LABEL_;
+        code4->u.label = label1;
+        code5->kind = LABEL_;
+        code5->u.label = label2;
+        return link_(code1, link_(code4, link_(code2, link_(code5, code3))));
     }
     else if(!strcmp(Stmt->child[0]->name,"RETURN")){
         Operand t1 = new_temp();
         InterCode code1 = translate_Exp(Stmt->child[1], t1);
-        InterCode code2 = malloc(sizeof(struct InterCode));
-        code2.kind = RETURN;
-        code2.u.return_value = t1;
-        return link(code1, code2);
+        InterCode code2 = (InterCode)malloc(sizeof(struct InterCode_));
+        code2->kind = RETURN_;
+        code2->u.ret = t1;
+        return link_(code1, code2);
     }
     else if(!strcmp(Stmt->child[0]->name,"WHILE")){
         Operand label1 = new_label();
         Operand label2 = new_label();
         Operand label3 = new_label();
-        InterCode code1 = malloc(sizeof(struct InterCode));
-        InterCode code2 = malloc(sizeof(struct InterCode));
-        InterCode code3 = malloc(sizeof(struct InterCode));
-        InterCode code4 = malloc(sizeof(struct InterCode));
-        code1.kind = LABEL;
-        code1.u.label = label1;
-        code2.kind = LABEL;
-        code2.u.label = label2;
-        code3.kind = LABEL;
-        code3.u.label = label3;
+        InterCode code1 = (InterCode)malloc(sizeof(struct InterCode_));
+        InterCode code2 = (InterCode)malloc(sizeof(struct InterCode_));
+        InterCode code3 = (InterCode)malloc(sizeof(struct InterCode_));
+        InterCode code4 = (InterCode)malloc(sizeof(struct InterCode_));
+        code1->kind = LABEL_;
+        code1->u.label = label1;
+        code2->kind = LABEL_;
+        code2->u.label = label2;
+        code3->kind = LABEL_;
+        code3->u.label = label3;
         InterCode code5 = translate_Cond(Stmt->child[2], label2, label3);
         InterCode code6 = translate_Stmt(Stmt->child[4]);
-        code4.kind = GOTO;
-        code4.u.goto_label = label1;
-        return link(code1, link(code5, link(code2, link(code6, link(code4, code3)))));
+        code4->kind = GOTO_;
+        code4->u.goto_label = label1;
+        return link_(code1, link_(code5, link_(code2, link_(code6, link_(code4, code3)))));
     }
 }
-InterCode translate_Args(node Args, Operand* args){
+InterCode translate_Args(node Args, Operand* args, int num){
     //Args -> Exp COMMA Args
     //Args -> Exp
-    // if(Args->child_num == 1){
-    //     Operand t1 = new_temp();
-    //     InterCode code1 = translate_Exp(Args->child[0], t1);
-    //     *args = t1;
-    //     return code1;
-    // }
-    // else{
-    //     Operand t1 = new_temp();
-    //     InterCode code1 = translate_Exp(Args->child[0], t1);
-    //     InterCode code2 = translate_Args(Args->child[2], args);
-    //     return link(code1, code2);
-    // }
+    if(Args->child_num == 1){
+        Operand t1 = new_temp();
+        InterCode code1 = translate_Exp(Args->child[0], t1);
+        args[num] = t1;
+        return code1;
+    }
+    else{
+        Operand t1 = new_temp();
+        InterCode code1 = translate_Exp(Args->child[0], t1);
+        args[num] = t1;
+        InterCode code2 = translate_Args(Args->child[2], args, num+1);
+        return link_(code1, code2);
+    }
 }
 InterCode translate_Exp(node Exp,Operand place){
     //Exp -> Exp ASSIGNOP Exp
@@ -361,38 +389,41 @@ InterCode translate_Exp(node Exp,Operand place){
     //Exp -> INT
     //Exp -> FLOAT
     if(!strcmp(Exp->child[0]->name, "INT")){
-        struct Intercode code = malloc(sizeof(struct InterCode));
-        int value = *(int*(Exp->child[0]->literal));
-        code.kind = ASSIGN;
-        code.u.assign.right.kind = CONSTANT;
-        code.u.assign.right.u.value = value;  
-        code.u.assign.left = place;
+        InterCode code = (InterCode)malloc(sizeof(struct InterCode_));
+        int value = *((int*)(Exp->child[0]->literal));
+        code->kind = ASSIGN_;
+        code->u.assign.right = (Operand)malloc(sizeof(struct Operand_));
+        code->u.assign.right->kind = CONSTANT_;
+        code->u.assign.right->u.value = value;  
+        code->u.assign.left = place;
         return code;
     }
     else if(!strcmp(Exp->child[0]->name, "ID") && Exp->child_num == 1){
-        struct Intercode code = malloc(sizeof(struct InterCode));
-        FieldList field = searchField(Exp->child[0]->literal);
-        code.kind = ASSIGN;
-        code.u.assign.right.kind = VARIABLE;
-        code.u.assign.right.u.var_no = field->var_no;
-        code.u.assign.left = place;
+        InterCode code = (InterCode)malloc(sizeof(struct InterCode_));
+        code->kind = ASSIGN_;
+        code->u.assign.right = (Operand)malloc(sizeof(struct Operand_));
+        code->u.assign.right->kind = VARIABLE_;
+        strcpy(code->u.assign.right->u.name, Exp->child[0]->literal);
+        code->u.assign.left = place;
         return code;
     }
     else if(!strcmp(Exp->child[0]->name, "Exp") && !strcmp(Exp->child[1]->name, "ASSIGNOP")){
         FieldList field = searchField(Exp->child[0]->child[0]->literal);
         Operand t1 = new_temp();
-        struct Intercode code1 = translate_Exp(Exp->child[2], t1);
-        struct InterCode code2 = malloc(sizeof(struct InterCode));
-        struct InterCode code3 = malloc(sizeof(struct InterCode));
-        code2.kind = ASSIGN;
-        code2.u.assign.right.kind = VARIABLE;
-        code2.u.assign.right.u.var_no = t1->u.var_no;
-        code2.u.assign.left = place;
-        code3.kind = ASSIGN;
-        code3.u.assign.right.kind = VARIABLE;
-        code3.u.assign.right.u.var_no = field->var_no;
-        code3.u.assign.left = place;
-        return link(code1, link(code2,code3));
+        InterCode code1 = translate_Exp(Exp->child[2], t1);
+        InterCode code2 = (InterCode)malloc(sizeof(struct InterCode_));
+        InterCode code3 = (InterCode)malloc(sizeof(struct InterCode_));
+        code2->kind = ASSIGN_;
+        code2->u.assign.right = (Operand)malloc(sizeof(struct Operand_));
+        code2->u.assign.right->kind = VARIABLE_;
+        strcpy(code2->u.assign.right->u.name, t1->u.name);
+        code2->u.assign.left = place;
+        code3->kind = ASSIGN_;
+        code3->u.assign.right = (Operand)malloc(sizeof(struct Operand_));
+        code3->u.assign.right->kind = VARIABLE_;
+        strcpy(code3->u.assign.right->u.name, Exp->child[0]->child[0]->literal);
+        code3->u.assign.left = place;
+        return link_(code1, link_(code2,code3));
     }
     else if(!strcmp(Exp->child[0]->name, "Exp") && (!strcmp(Exp->child[1]->name, "PLUS") 
     || !strcmp(Exp->child[1]->name, "MINUS") || !strcmp(Exp->child[1]->name, "STAR") || !strcmp(Exp->child[1]->name, "DIV"))){
@@ -400,107 +431,102 @@ InterCode translate_Exp(node Exp,Operand place){
         Operand t2 = new_temp();
         InterCode code1 = translate_Exp(Exp->child[0], t1);
         InterCode code2 = translate_Exp(Exp->child[2], t2);
-        struct InterCode code3 = malloc(sizeof(struct InterCode));
-        switch (Exp->child[1]->name)
-        {
-        case "PLUS":
-            code3.kind = ADD;
-            break;
-        case "MINUS":
-            code3.kind = SUB;
-            break;
-        case "STAR":
-            code3.kind = MUL;
-            break; 
-        case "DIV":
-            code3.kind = DIV;
-            break;
-        default:
-            break;
+        InterCode code3 = (InterCode)malloc(sizeof(struct InterCode_));
+        if(!strcmp(Exp->child[1]->name, "PLUS")){
+            code3->kind = ADD_;
         }
-        code3.u.binop.result = place;
-        code3.u.binop.op = t1;
-        code3.u.binop.op2 = t2;
-        return link(code1, link(code2, code3));
+        else if(!strcmp(Exp->child[1]->name, "MINUS")){
+            code3->kind = SUB_;
+        }
+        else if(!strcmp(Exp->child[1]->name, "STAR")){
+            code3->kind = MUL_;
+        }
+        else if(!strcmp(Exp->child[1]->name, "DIV")){
+            code3->kind = DIV_;
+        }
+        code3->u.binop.result = place;
+        code3->u.binop.op = t1;
+        code3->u.binop.op2 = t2;
+        return link_(code1, link_(code2, code3));
     }
     else if(!strcmp(Exp->child[0]->name, "MINUS")){
         Operand t1 = new_temp();
         InterCode code1 = translate_Exp(Exp->child[0], t1);
-        InterCode code2 = malloc(sizeof(struct InterCode));
+        InterCode code2 = (InterCode)malloc(sizeof(struct InterCode_));
         Operand zero = create_Immediate(0);
-        code2.kind = SUB;
+        code2->kind = SUB_;
         //NOT
-        code2.u.binop.result = place;
-        code2.u.binop.op = zero;
-        code2.u.binop.op2 = t1;
-        return link(code1, code2);
+        code2->u.binop.result = place;
+        code2->u.binop.op = zero;
+        code2->u.binop.op2 = t1;
+        return link_(code1, code2);
     }
     else if((!strcmp(Exp->child[0]->name, "Exp") && (!strcmp(Exp->child[1]->name,"RELOP") || !strcmp(Exp->child[1]->name,"AND") || !strcmp(Exp->child[1]->name,"OR"))) || !strcmp(Exp->child[0]->name, "NOT")){
         Operand label1 = new_label();
         Operand label2 = new_label();
-        InterCode code0 = malloc(sizeof(struct InterCode));
+        InterCode code0 = (InterCode)malloc(sizeof(struct InterCode_));
         Operand zero = create_Immediate(0);
-        code0.kind = ASSIGN;
-        code0.u.assign.right = zero;
-        code0.u.assign.left = place;
+        code0->kind = ASSIGN_;
+        code0->u.assign.right = zero;
+        code0->u.assign.left = place;
 
         InterCode code1 = translate_Cond(Exp, label1, label2);
-        InterCode code2 = malloc(sizeof(struct InterCode));
-        InterCode code3 = malloc(sizeof(struct InterCode));
-        InterCode code4 = malloc(sizeof(struct InterCode));
+        InterCode code2 = (InterCode)malloc(sizeof(struct InterCode_));
+        InterCode code3 = (InterCode)malloc(sizeof(struct InterCode_));
+        InterCode code4 = (InterCode)malloc(sizeof(struct InterCode_));
         Operand one = create_Immediate(1);
 
-        code2.kind = LABEL;
-        code2.u.label = label1;
-        code3.kind = ASSIGN;
-        code3.u.assign.right = one;
-        code3.u.assign.left = place;
-        code4.kind = LABEL;
-        code4.u.label = label2;
-        return link(code0, link(code1, link(code2, link(code3, code4))));
+        code2->kind = LABEL_;
+        code2->u.label = label1;
+        code3->kind = ASSIGN_;
+        code3->u.assign.right = one;
+        code3->u.assign.left = place;
+        code4->kind = LABEL_;
+        code4->u.label = label2;
+        return link_(code0, link_(code1, link_(code2, link_(code3, code4))));
     }
     else if(!strcmp(Exp->child[0]->name, "ID") && !strcmp(Exp->child[2]->name, "Args")){
         FieldList field = searchField(Exp->child[0]->literal);
         int argc = field->argc;
         Operand Args[MAX_NAME_LEN];
-        InterCode code1 = translate_Args(Exp->child[2], Args);
+        InterCode code1 = translate_Args(Exp->child[2], Args, argc);
         if(!strcmp(field->name, "write")){
-            InterCode code2 = malloc(sizeof(struct InterCode));
-            InterCode code3 = malloc(sizeof(struct InterCode));
-            code2.kind = WRITE;
-            code2.u.write = Args[0];
-            code3.kind = ASSIGN;
+            InterCode code2 = (InterCode)malloc(sizeof(struct InterCode_));
+            InterCode code3 = (InterCode)malloc(sizeof(struct InterCode_));
+            code2->kind = WRITE_;
+            code2->u.write = Args[0];
+            code3->kind = ASSIGN_;
             Operand zero = create_Immediate(0);
-            code3.u.assign.right = zero;
-            code3.u.assign.left = place;
-            return link(code1, link(code2, code3));
+            code3->u.assign.right = zero;
+            code3->u.assign.left = place;
+            return link_(code1, link_(code2, code3));
         }
         else{
             for(int i = 0; i < argc; i++){
-                InterCode code2 = malloc(sizeof(struct InterCode));
-                code2.kind = ARG;
-                code2.u.arg = Args[i];
-                code1 = link(code1, code2);
+                InterCode code2 = (InterCode)malloc(sizeof(struct InterCode_));
+                code2->kind = ARG_;
+                code2->u.arg = Args[i];
+                code1 = link_(code1, code2);
             }
-            InterCode code3 = malloc(sizeof(struct InterCode));
-            code3.kind = CALL;
-            code3.u.func_name = field->name;
-            code3.u.call.result = place;
-            return link(code1, code3);
+            InterCode code3 = (InterCode)malloc(sizeof(struct InterCode_));
+            code3->kind = CALL_;
+            strcpy(code3->u.call.func_name, field->name);
+            code3->u.call.result = place;
+            return link_(code1, code3);
         }
     }
     else if(!strcmp(Exp->child[0]->name, "ID") && !strcmp(Exp->child[1]->name, "LP") && !strcmp(Exp->child[2]->name, "RP")){
         FieldList field = searchField(Exp->child[0]->literal);
-        InterCode code = malloc(sizeof(struct InterCode));
+        InterCode code = (InterCode)malloc(sizeof(struct InterCode_));
         if (!strcmp(field->name,"read")){
-            code.kind = READ;
-            code.u.read = place;
+            code->kind = READ_;
+            code->u.read = place;
             return code;
         }
         else{
-            code.kind = CALL;
-            code.u.call.func_name = field->name;
-            code.u.call.result = place;
+            code->kind = CALL_;
+            code->u.call.func_name = field->name;
+            code->u.call.result = place;
             return code;
         }
     }
@@ -510,17 +536,11 @@ InterCode translate_Exp(node Exp,Operand place){
         Operand t2 = new_temp();
         InterCode code1 = translate_Exp(Exp->child[0], t1);
         InterCode code2 = translate_Exp(Exp->child[2], t2);
-        InterCode code3 = malloc(sizeof(struct InterCode));
-        code3.kind = ADD;
-        code3.u.binop.result = place;
-        code3.u.binop.op = t1;
-        code3.u.binop.op2 = t2;
-        return link(code1, link(code2, code3));
+        InterCode code3 = (InterCode)malloc(sizeof(struct InterCode_));
+        code3->kind = ADD_;
+        code3->u.binop.result = place;
+        code3->u.binop.op = t1;
+        code3->u.binop.op2 = t2;
+        return link_(code1, link_(code2, code3));
     }
-}
-int main(){
-    node root = parse();
-    semantic(root);
-    InterCode code = translate_Program(root);
-    print_Intercode(code);
 }
