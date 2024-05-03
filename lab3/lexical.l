@@ -202,6 +202,7 @@ SPACE [ \r\t\n]+
 }
 {RELOP} {
   yylval.type_node = create_node("RELOP", yylineno, 0, NULL);
+  set_literal(yylval.type_node, TYPE_ID, yytext);
   return RELOP;
 }
 {ID} {

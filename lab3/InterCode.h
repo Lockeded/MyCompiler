@@ -27,7 +27,7 @@ struct InterCode_
         Operand read;
         Operand write;
         Operand arg;
-        struct { Operand result; char* func_name; } call;    
+        struct { Operand result; Operand func } call;    
         struct { Operand var, size } dec;    
     } u;
     InterCode prev, next;

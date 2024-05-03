@@ -1128,12 +1128,13 @@ YY_RULE_SETUP
 #line 203 "lexical.l"
 {
   yylval.type_node = create_node("RELOP", yylineno, 0, NULL);
+  set_literal(yylval.type_node, TYPE_ID, yytext);
   return RELOP;
 }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 207 "lexical.l"
+#line 208 "lexical.l"
 {
   yylval.type_node = create_node("ID", yylineno, 0, NULL);
   set_literal(yylval.type_node, TYPE_ID, yytext);
@@ -1142,17 +1143,17 @@ YY_RULE_SETUP
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 212 "lexical.l"
+#line 213 "lexical.l"
 {
     error_A(yylineno,yytext,NULL);
 }
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 216 "lexical.l"
+#line 217 "lexical.l"
 ECHO;
 	YY_BREAK
-#line 1156 "lex.yy.c"
+#line 1157 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2169,7 +2170,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 216 "lexical.l"
+#line 217 "lexical.l"
 
 int main(int argc, char** argv){
     if (argc <= 1) return 1;

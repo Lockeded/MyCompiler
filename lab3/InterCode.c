@@ -21,26 +21,62 @@ void print_Intercode(){
     while (p != NULL){
         switch (p->kind)
         {
-        case LABEL_:
-            printf("LABEL %s :\n", p->u.label->u.name);
-            break;
-        case FUNCTION_:
-            printf("FUNCTION %s :\n", p->u.call.func_name);
-            break;
-        case ASSIGN_:
-            if(p->u.assign.right->kind == CONSTANT_){
-                printf("%s := %d\n", p->u.assign.left->u.name, p->u.assign.right->u.value);
-            }
-            else if(p->u.assign.right->kind == VARIABLE_){
-                printf("%s := %s\n", p->u.assign.left->u.name, p->u.assign.right->u.name);
-            }
-            else if(p->u.assign.right->kind == ADDRESS_){
-                printf("%s := &%s\n", p->u.assign.left->u.name, p->u.assign.right->u.name);
-            }
-            break;
-        // case ADD_:
-        //      if()
-        // }
+            case ASSIGN_:
+                printf("%s := ", p->u.assign.left->u.name);
+                if(p->u.assign.right->kind == CONSTANT_){
+                    printf("#%d\n", p->u.assign.right->u.value);
+                }
+                else{
+                    printf("%s\n", p->u.assign.right->u.name);
+                }
+                break;
+            case ADD_:
+                printf("%s := %s + %s\n", p->u.binop.result->u.name, p->u.binop.op->u.name, p->u.binop.op2->u.name);
+                break;
+            case SUB_:
+                printf("%s := %s - %s\n", p->u.binop.result->u.name, p->u.binop.op->u.name, p->u.binop.op2->u.name);
+                break;
+            case MUL_:
+                printf("%s := %s * %s\n", p->u.binop.result->u.name, p->u.binop.op->u.name, p->u.binop.op2->u.name);
+                break;
+            case DIV_: 
+                printf("%s := %s / %s\n", p->u.binop.result->u.name, p->u.binop.op->u.name, p->u.binop.op2->u.name);
+                break;
+            case GOTO_:
+                printf("GOTO %s\n", p->u.goto_label->u.name);
+                break;
+            case RETURN_:
+                printf("RETURN %s\n", p->u.ret->u.name);
+                break;
+            case LABEL_:
+                printf("LABEL %s :\n", p->u.label->u.name);
+                break;
+            case IF_:
+                printf("IF %s %s %s GOTO %s\n", p->u.if_goto.t1->u.name, p->u.if_goto.op->u.name, p->u.if_goto.t2->u.name, p->u.if_goto.label_true->u.name);
+                break;
+            case READ_:
+                printf("READ %s\n", p->u.read->u.name);
+                break;
+            case WRITE_:
+                printf("WRITE %s\n", p->u.write->u.name);
+                break;
+            case CALL_:
+                printf("%s := CALL %s\n", p->u.call.result->u.name, p->u.call.func->u.name);
+                break;
+            case ARG_:
+                printf("ARG %s\n", p->u.arg->u.name);
+                break;
+            case DEC_:
+                printf("DEC %s %d\n", p->u.dec.var->u.name, p->u.dec.size->u.value);
+                break;
+            case PARAM_:
+                printf("PARAM %s\n", p->u.call.func->u.name);
+                break;
+            case FUNCTION_:
+                printf("FUNCTION %s :\n", p->u.call.func->u.name);
+                break;
+            default:
+                break;
         }
         p = p->next;
     }
@@ -139,11 +175,11 @@ void translate_VarDec(node VarDec){
 void translate_FunDec(node FunDec){
     //FunDec -> ID LP VarList RP
     //FunDec -> ID LP RP
-    printf("%s",FunDec->child[0]->literal);
     FieldList field = searchField(FunDec->child[0]->literal);
     InterCode code = (InterCode)malloc(sizeof(struct InterCode_));
     code->kind = FUNCTION_;
-    strcpy(code->u.call.func_name, FunDec->child[0]->literal);
+    code->u.call.func = (Operand)malloc(sizeof(struct Operand_));
+    strcpy(code->u.call.func->u.name, FunDec->child[0]->literal);
     insert_Intercode(code);
     if(FunDec->child_num == 4){
         translate_VarList(FunDec->child[2]);
@@ -162,7 +198,7 @@ void translate_ParamDec(node ParamDec){
     FieldList field = searchField(ParamDec->child[1]->child[0]->literal);
     InterCode code = (InterCode)malloc(sizeof(struct InterCode_));
     code->kind = PARAM_;
-    strcpy(code->u.call.func_name, field->name);
+    strcpy(code->u.call.func->u.name, field->name);
     insert_Intercode(code);
 }
 void translate_CompSt(node CompSt){
@@ -230,7 +266,7 @@ InterCode translate_Cond(node Exp, Operand label_true, Operand label_false){
         InterCode code3 = (InterCode)malloc(sizeof(struct InterCode_));
         code3->kind = IF_;
         code3->u.if_goto.t1 = t1;
-        Operand op = malloc(sizeof(struct Operand_));
+        Operand op = (Operand)malloc(sizeof(struct Operand_));
         op->kind = RELOP_;
         strcpy(op->u.name, Exp->child[1]->literal);
         code3->u.if_goto.op = t2;
@@ -388,7 +424,7 @@ InterCode translate_Exp(node Exp,Operand place){
     //Exp -> ID
     //Exp -> INT
     //Exp -> FLOAT
-    if(!strcmp(Exp->child[0]->name, "INT")){
+    if(Exp->child[0]->literal_type == TYPE_INT || Exp->child[0]->literal_type == TYPE_FLOAT){
         InterCode code = (InterCode)malloc(sizeof(struct InterCode_));
         int value = *((int*)(Exp->child[0]->literal));
         code->kind = ASSIGN_;
@@ -398,7 +434,7 @@ InterCode translate_Exp(node Exp,Operand place){
         code->u.assign.left = place;
         return code;
     }
-    else if(!strcmp(Exp->child[0]->name, "ID") && Exp->child_num == 1){
+    else if(Exp->child[0]->literal_type == TYPE_ID && Exp->child_num == 1){
         InterCode code = (InterCode)malloc(sizeof(struct InterCode_));
         code->kind = ASSIGN_;
         code->u.assign.right = (Operand)malloc(sizeof(struct Operand_));
@@ -451,7 +487,7 @@ InterCode translate_Exp(node Exp,Operand place){
     }
     else if(!strcmp(Exp->child[0]->name, "MINUS")){
         Operand t1 = new_temp();
-        InterCode code1 = translate_Exp(Exp->child[0], t1);
+        InterCode code1 = translate_Exp(Exp->child[1], t1);
         InterCode code2 = (InterCode)malloc(sizeof(struct InterCode_));
         Operand zero = create_Immediate(0);
         code2->kind = SUB_;
@@ -485,7 +521,7 @@ InterCode translate_Exp(node Exp,Operand place){
         code4->u.label = label2;
         return link_(code0, link_(code1, link_(code2, link_(code3, code4))));
     }
-    else if(!strcmp(Exp->child[0]->name, "ID") && !strcmp(Exp->child[2]->name, "Args")){
+    else if(Exp->child[0]->literal_type == TYPE_ID && !strcmp(Exp->child[1]->name, "LP") && Exp->child_num == 4 ){
         FieldList field = searchField(Exp->child[0]->literal);
         int argc = field->argc;
         Operand Args[MAX_NAME_LEN];
@@ -510,12 +546,12 @@ InterCode translate_Exp(node Exp,Operand place){
             }
             InterCode code3 = (InterCode)malloc(sizeof(struct InterCode_));
             code3->kind = CALL_;
-            strcpy(code3->u.call.func_name, field->name);
+            strcpy(code3->u.call.func->u.name, field->name);
             code3->u.call.result = place;
             return link_(code1, code3);
         }
     }
-    else if(!strcmp(Exp->child[0]->name, "ID") && !strcmp(Exp->child[1]->name, "LP") && !strcmp(Exp->child[2]->name, "RP")){
+    else if(Exp->child[0]->literal_type == TYPE_ID && !strcmp(Exp->child[1]->name, "LP") && !strcmp(Exp->child[2]->name, "RP")){
         FieldList field = searchField(Exp->child[0]->literal);
         InterCode code = (InterCode)malloc(sizeof(struct InterCode_));
         if (!strcmp(field->name,"read")){
@@ -525,7 +561,8 @@ InterCode translate_Exp(node Exp,Operand place){
         }
         else{
             code->kind = CALL_;
-            code->u.call.func_name = field->name;
+            code->u.call.func = (Operand)malloc(sizeof(struct Operand_));
+            strcpy(code->u.call.func->u.name, field->name);
             code->u.call.result = place;
             return code;
         }
