@@ -504,6 +504,7 @@ Type Exp(node root){
                     root->child[2]->line, (char*)root->child[2]->child[0]->literal);
             }
         }
+        type_1->u.array.elem->isID = 1;
         return type_1->u.array.elem;
     }
     else if(!strcmp(root->child[1]->name, "DOT")){
