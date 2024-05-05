@@ -448,8 +448,7 @@ void translate_VarDec(node VarDec){
         Operand size = create_Immediate(4 *(*(int*)VarDec->child[2]->literal));
         Operand ID = (Operand)malloc(sizeof(struct Operand_));
         ID->kind = VARIABLE_;
-        printf("%s",VarDec->child[0]->literal);
-        //strcpy(ID->u.name, VarDec->child[0]->literal);
+        strcpy(ID->u.name, VarDec->child[0]->child[0]->literal);
         InterCode code = (InterCode)malloc(sizeof(struct InterCode_));
         code->kind = DEC_;
         code->u.dec.size = size;
@@ -736,11 +735,11 @@ InterCode translate_Exp(node Exp,Operand place){
         return code;
     }
     else if(!strcmp(Exp->child[0]->name, "Exp") && !strcmp(Exp->child[1]->name, "ASSIGNOP")){
-        if(!strcmp(Exp->child[0]->child[1]->name,"LB") && Exp->child[0]->child_num == 4){
-            FieldList field = searchField(Exp->child[0]->child[0]->child[0]->literal);
-        }
-        else if(!strcmp(Exp->child[0]->child[0]->name,"ID")){
+        if(!strcmp(Exp->child[0]->child[0]->name,"ID") && Exp->child_num == 3){
             FieldList field = searchField(Exp->child[0]->child[0]->literal);
+        }
+        else if(!strcmp(Exp->child[0]->child[1]->name,"LB") && Exp->child[0]->child_num == 4){
+            FieldList field = searchField(Exp->child[0]->child[0]->child[0]->literal);
         }
         else{
             printf("Cannot translate: Code contains variables of multi-dimensional array type or parameters of array type.");
@@ -750,7 +749,12 @@ InterCode translate_Exp(node Exp,Operand place){
         InterCode code1 = translate_Exp(Exp->child[2], t1);
         Operand v1 = (Operand)malloc(sizeof(struct Operand_));
         v1->kind = VARIABLE_;
-        //strcpy(v1->u.name, Exp->child[0]->child[0]->literal);
+        if(!strcmp(Exp->child[0]->child[0]->name,"ID") && Exp->child_num == 3){
+            strcpy(v1->u.name, Exp->child[0]->child[0]->literal);
+        }
+        else if(!strcmp(Exp->child[0]->child[1]->name,"LB") && Exp->child[0]->child_num == 4){
+            strcpy(v1->u.name, Exp->child[0]->child[0]->child[0]->literal);
+        }
         InterCode code2 = (InterCode)malloc(sizeof(struct InterCode_));
         code2->kind = ASSIGN_;
         code2->u.assign.right = t1;
