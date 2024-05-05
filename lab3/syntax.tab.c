@@ -1534,7 +1534,7 @@ yyreduce:
     {
   case 2:
 #line 36 "syntax.y"
-                     { (yyval.type_node)= create_node("Program", 0, 1, create_child_list(1,(node []){(yyvsp[0].type_node)}));semantic((yyval.type_node));translate_Program((yyval.type_node));}
+                     { (yyval.type_node)= create_node("Program", 0, 1, create_child_list(1,(node []){(yyvsp[0].type_node)}));print_tree((yyval.type_node),0);semantic((yyval.type_node));translate_Program((yyval.type_node));}
 #line 1539 "syntax.tab.c"
     break;
 

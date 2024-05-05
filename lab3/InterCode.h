@@ -1,7 +1,7 @@
 #include "Semantic.h"
 typedef struct Operand_* Operand;
 typedef struct InterCode_* InterCode;    
-typedef enum { VARIABLE_, CONSTANT_, ADDRESS_, LABEL1, FUNCTION1, RELOP_ } op_kind;
+typedef enum { VARIABLE_, CONSTANT_, ADDRESS_, LABEL1, FUNCTION1, RELOP_ , DER_} op_kind;
 typedef enum { ASSIGN_, ADD_, SUB_, MUL_, DIV_, GOTO_, RETURN_, LABEL_, IF_, READ_, WRITE_, CALL_, ARG_, DEC_,PARAM_,FUNCTION_ } code_kind;
 struct ArgsList {
     Operand arg;
