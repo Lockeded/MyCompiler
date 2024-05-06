@@ -73,7 +73,9 @@ Type Specifier(node root){
         return type;
     }
     else{
-        return StructSpecifier(root->child[0]);
+        //return StructSpecifier(root->child[0]);
+        printf("Cannot translate: Code contains variables or parameters of structure type.\n");
+        exit(0);
     }
 }
 void ExtDecListForStruct(node root, Type type){
@@ -109,6 +111,10 @@ FieldList VarDec(node root, Type type){
         }
     }
     else{
+        if(strcmp(root->child[0]->child[0]->name,"ID")){
+            printf("Cannot translate: Code contains variables of multi-dimensional array type or parameters of array type.\n");
+            exit(0);
+        }
         Type array_type = (Type)malloc(sizeof(struct Type_));
         array_type->isID = 0;
         array_type->kind = ARRAY;
