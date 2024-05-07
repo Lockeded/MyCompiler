@@ -33,7 +33,7 @@ struct InterCode_
     InterCode prev, next;
 };
 void insert_Intercode(InterCode code);
-void print_Intercode();
+void print_Intercode(InterCode code);
 Operand new_temp();
 Operand new_label();
 InterCode link_(InterCode code1, InterCode code2);

@@ -19,8 +19,8 @@ void insert_Intercode(InterCode code){
         tail = code; 
     }
 }
-void print_Intercode(){
-    InterCode p = head;
+void print_Intercode(InterCode code){
+    InterCode p = code;
     while (p != NULL){
         switch (p->kind)
         {
@@ -403,7 +403,8 @@ Operand create_Immediate(int value){
 void translate_Program(node Program){
     //Program -> ExtDefList
     translate_ExtDefList(Program->child[0]);
-    print_Intercode();
+    printf("\n\n\n\n");
+    print_Intercode(head);
 }
 void translate_ExtDefList(node ExtDefList){
     //ExtDefList -> ExtDef ExtDefList
@@ -563,7 +564,7 @@ InterCode translate_Cond(node Exp, Operand label_true, Operand label_false){
         return link_(link_(link_(code1, code2), code3), code4);
     }
     else if(!strcmp(Exp->child[0]->name, "NOT")){
-        return translate_Cond(Exp->child[1], label_false, label_true);
+        return translate_Cond(Exp->child[1]->child[1], label_false, label_true);
     }
     else if(!strcmp(Exp->child[1]->name, "AND")){
         Operand label1 = new_label();
@@ -584,22 +585,22 @@ InterCode translate_Cond(node Exp, Operand label_true, Operand label_false){
         return link_(code1, link_(code3, code2));
     }
     else{
-        Operand t1 = new_temp();
-        InterCode code1 = translate_Exp(Exp, t1);
-        InterCode code2 = (InterCode)malloc(sizeof(struct InterCode_));
-        code2->kind = IF_;
-        code2->u.if_goto.t1 = t1;
-        Operand op = malloc(sizeof(struct Operand_));
-        op->kind = RELOP_;
-        strcpy(op->u.name, "!=");
-        code2->u.if_goto.op = op;
-        Operand zero = create_Immediate(0);
-        code2->u.if_goto.t2 = zero;
-        code2->u.if_goto.label_true = label_true;
-        InterCode code3 = (InterCode)malloc(sizeof(struct InterCode_));
-        code3->kind = GOTO_;
-        code3->u.goto_label = label_false;
-        return link_(code1, link_(code2, code3));
+        // Operand t1 = new_temp();
+        // InterCode code1 = translate_Exp(Exp, t1);
+        // InterCode code2 = (InterCode)malloc(sizeof(struct InterCode_));
+        // code2->kind = IF_;
+        // code2->u.if_goto.t1 = t1;
+        // Operand op = malloc(sizeof(struct Operand_));
+        // op->kind = RELOP_;
+        // strcpy(op->u.name, "!=");
+        // code2->u.if_goto.op = op;
+        // Operand zero = create_Immediate(0);
+        // code2->u.if_goto.t2 = zero;
+        // code2->u.if_goto.label_true = label_true;
+        // InterCode code3 = (InterCode)malloc(sizeof(struct InterCode_));
+        // code3->kind = GOTO_;
+        // code3->u.goto_label = label_false;
+        // return link_(code1, link_(code2, code3));
     }
 }
 InterCode translate_Stmt(node Stmt){
@@ -673,10 +674,18 @@ InterCode translate_Stmt(node Stmt){
         code3->kind = LABEL_;
         code3->u.label = label3;
         InterCode code5 = translate_Cond(Stmt->child[2], label2, label3);
+        insert_Intercode(code1);
+        insert_Intercode(code5);
+        insert_Intercode(code2);
         InterCode code6 = translate_Stmt(Stmt->child[4]);
+        if(code6){
+            //不得已之举，为了解决translate_Compst不返回code，实在是设计的缺陷且懒得改
+            insert_Intercode(code6);
+        }
+
         code4->kind = GOTO_;
         code4->u.goto_label = label1;
-        return link_(code1, link_(code5, link_(code2, link_(code6, link_(code4, code3)))));
+        return link_(code4, code3);
     }
 }
 InterCode translate_Args(node Args, Operand* args, int num){
@@ -740,10 +749,6 @@ InterCode translate_Exp(node Exp,Operand place){
         }
         else if(!strcmp(Exp->child[0]->child[1]->name,"LB") && Exp->child[0]->child_num == 4){
             FieldList field = searchField(Exp->child[0]->child[0]->child[0]->literal);
-        }
-        else{
-            printf("Cannot translate: Code contains variables of multi-dimensional array type or parameters of array type.");
-            exit(0);
         }
         Operand t1 = new_temp();
         InterCode code1 = translate_Exp(Exp->child[2], t1);
