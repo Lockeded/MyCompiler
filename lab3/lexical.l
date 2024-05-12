@@ -222,6 +222,9 @@ int main(int argc, char** argv){
         perror(argv[1]);
         return 1;
     }
+    if(argc > 2){
+        output = fopen(argv[2],"w");
+    }
     yyrestart(f);
     yyparse();
     return 0;

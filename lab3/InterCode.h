@@ -1,3 +1,5 @@
+#ifndef INTERCODE_H
+#define INTERCODE_H
 #include "Semantic.h"
 typedef struct Operand_* Operand;
 typedef struct InterCode_* InterCode;    
@@ -56,3 +58,4 @@ InterCode translate_Cond(node Exp, Operand label_true, Operand label_false);
 InterCode translate_Stmt(node Stmt);
 InterCode translate_Args(node Args, Operand* args, int num);
 InterCode translate_Exp(node Exp, Operand place);
+#endif

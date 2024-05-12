@@ -187,10 +187,10 @@ FieldList FunDecForDec(node root, Type type){
     if(root->child_num == 4){
         new_field->Args = VarList(root->child[2],new_field);
     }
-    if(field && field->isFunctionImplemented != -1 && (!check_args(field,new_field) || memcmp(&field->type->u, &type->u, sizeof(type->u)) != 0)){
-        printf("Error type 19 at Line %d: Inconsistent declaration of function \"%s\".\n", root->child[0]->line, (char*)root->child[0]->literal);
-        return NULL;
-    }
+    // if(field && field->isFunctionImplemented != -1 && (!check_args(field,new_field) || memcmp(&field->type->u, &type->u, sizeof(type->u)) != 0)){
+    //     printf("Error type 19 at Line %d: Inconsistent declaration of function \"%s\".\n", root->child[0]->line, (char*)root->child[0]->literal);
+    //     return NULL;
+    // }
     insertField(new_field);
     return new_field;
 }
@@ -207,10 +207,10 @@ int check_args(FieldList field1, FieldList field2){
         if(!p1 || !p2){
             break;
         }
-        if(memcmp(&p1->type->u, &p2->type->u, sizeof(p1->type->u)) != 0)
-        {
-            return 0;
-        }
+        // if(memcmp(&p1->type->u, &p2->type->u, sizeof(p1->type->u)) != 0)
+        // {
+        //     return 0;
+        // }
         p1 = p1->Args;
         p2 = p2->Args;
     }
@@ -344,9 +344,9 @@ void Dec(node root, Type type){
     VarDec(root->child[0],type);
     if(root->child_num >= 3){
         Type type_1 = Exp(root->child[2]);
-        if(memcmp(&type_1->u, &type->u, sizeof(type->u)) != 0){
-            printf("Error type 5 at Line %d: Type mismatched for assignment.\n", root->child[1]->line);
-        }
+        // if(memcmp(&type_1->u, &type->u, sizeof(type->u)) != 0){
+        //     printf("Error type 5 at Line %d: Type mismatched for assignment.\n", root->child[1]->line);
+        // }
     }
 }
 void StmtList(node root, Type type){
@@ -381,9 +381,9 @@ void Stmt(node root, Type type){
         if(!return_type){
 
         }
-        else if(memcmp(&return_type->u, &type->u, sizeof(type->u)) != 0){
-            printf("Error type 8 at Line %d: Type mismatched for return.\n", root->child[0]->line);
-        }
+        // else if(memcmp(&return_type->u, &type->u, sizeof(type->u)) != 0){
+        //     printf("Error type 8 at Line %d: Type mismatched for return.\n", root->child[0]->line);
+        // }
     }
     else if(!strcmp(root->child[0]->name, "IF")){
         Exp(root->child[2]);
@@ -458,9 +458,9 @@ Type Exp(node root){
              printf("Error type 6 at Line %d: The left-hand side of an assignment must be a variable.\n", root->child[0]->line);
         }
         else if(type_1->kind == STRUCTURE && type_2->kind == STRUCTURE){
-            if(memcmp(&type_1->u,&type_2->u,sizeof(type_1->u)) != 0){
-                printf("Error type 5 at Line %d: Type mismatched for assignment.\n", root->child[1]->line);
-            }
+            // if(memcmp(&type_1->u,&type_2->u,sizeof(type_1->u)) != 0){
+            //     printf("Error type 5 at Line %d: Type mismatched for assignment.\n", root->child[1]->line);
+            // }
             // FieldList p = type_1->u.structure->Args;
             // FieldList q = type_2->u.structure->Args;
             // while(p && q){
@@ -473,9 +473,9 @@ Type Exp(node root){
             //     q = q->tail;
             // }
         }
-        else if(memcmp(&type_1->u, &type_2->u, sizeof(type_1->u)) != 0){
-            printf("Error type 5 at Line %d: Type mismatched for assignment.\n", root->child[1]->line);
-        }
+        // else if(memcmp(&type_1->u, &type_2->u, sizeof(type_1->u)) != 0){
+        //     printf("Error type 5 at Line %d: Type mismatched for assignment.\n", root->child[1]->line);
+        // }
         return type_1;
 
     }
@@ -485,9 +485,9 @@ Type Exp(node root){
         if(type_1 == NULL || type_2 == NULL){
             return NULL;
         }
-        if(memcmp(&type_1->u, &type_2->u, sizeof(type_1->u)) != 0){
-            printf("Error type 7 at Line %d: Type mismatched for operands.\n", root->child[1]->line);
-        }
+        // if(memcmp(&type_1->u, &type_2->u, sizeof(type_1->u)) != 0){
+        //     printf("Error type 7 at Line %d: Type mismatched for operands.\n", root->child[1]->line);
+        // }
         return type_1;
     }
     else if(!strcmp(root->child[1]->name, "LB")){

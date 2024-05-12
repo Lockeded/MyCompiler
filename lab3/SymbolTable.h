@@ -5,7 +5,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#define MAX_NAME_LEN 50
+#define MAX_NAME_LEN 500
 #define MAX_STACK_LEN 100
 typedef struct Type_* Type;
 typedef struct FieldList_* FieldList;

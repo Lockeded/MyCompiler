@@ -1,8 +1,10 @@
 //
 // Created by LIRUIBO on 24-3-17.
 //
-#ifndef POC_TREE_H
-#define POC_TREE_H
+#include <stdio.h>
+#ifndef NODE_H
+#define NODE_H
+FILE* output;
 extern int yylineno;
 typedef enum {
     TYPE_INT,
@@ -29,4 +31,4 @@ int my_stoi(char* value);
 float my_stof(char* value);
 void error_A(int line,char* character, char* msg);
 void yyerror(char* msg);
-#endif //POC_TREE_H
+#endif // NODE_H
